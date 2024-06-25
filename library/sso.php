@@ -106,7 +106,9 @@
             if ( $status == "1") {
                 $referrer = isset($_COOKIE['user_referrer']) ? sanitize_text_field($_COOKIE['user_referrer']) : '';
             }
-            $url = sprintf('%s/login/sso?user_referrer=%s&redirect_to=%s', $nbee_frontend_crm_uri, $referrer, get_permalink( $query->get_queried_object_id()) . '?auth_callback=true' );
+
+            $nbee_client_public_key = get_option('nbee_client_public_key');
+            $url = sprintf('%s/login/sso?user_referrer=%s&redirect_to=%s&app_id=%s', $nbee_frontend_crm_uri, $referrer, get_permalink( $query->get_queried_object_id()) . '?auth_callback=true', $nbee_client_public_key );
             wp_redirect( $url );
             exit;
         }
