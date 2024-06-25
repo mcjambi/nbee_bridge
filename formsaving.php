@@ -17,8 +17,8 @@ function save_nbee_general_setting() {
         update_option('nbee_frontend_crm_uri', sanitize_text_field( $_POST['nbee_frontend_crm_uri'] ) );
     }
 
-    if ( isset( $_POST['nbee_client_key'] ) && sanitize_title($_POST['nbee_client_key']) !== '' ) {
-        update_option('nbee_client_key', strtoupper( sanitize_title( trim($_POST['nbee_client_key']) ) ) );
+    if ( isset( $_POST['nbee_client_public_key'] ) && sanitize_title($_POST['nbee_client_public_key']) !== '' ) {
+        update_option('nbee_client_public_key', strtoupper( sanitize_title( trim($_POST['nbee_client_public_key']) ) ) );
     }
 
     wp_redirect( admin_url('admin.php?page=nbee_bridge') );
@@ -50,6 +50,10 @@ function save_nbee_user_tracking() {
         $nbee_google_analytics_key = sanitize_text_field( $_POST['nbee_google_analytics_key'] );
         update_option('nbee_google_analytics_key', $nbee_google_analytics_key );
     }
+    if ( isset( $_POST['nbee_advance_user_tracking_status'] ) ) {
+        $nbee_advance_user_tracking_status = sanitize_text_field( $_POST['nbee_advance_user_tracking_status'] );
+        update_option('nbee_advance_user_tracking_status', $nbee_advance_user_tracking_status );
+    }
 
 
     update_option('nbee_user_tracking_status', $turn_nbee_user_tracking_status_on );
@@ -79,7 +83,7 @@ function nbee_on_uninstall() {
     delete_option('nbee_backend_crm_uri');
     delete_option('nbee_frontend_crm_uri');
     delete_option('nbee_sso_page');
-    delete_option('nbee_client_key');
+    delete_option('nbee_client_public_key');
     delete_option('nbee_user_tracking_status');
     delete_option('nbee_referrer_tracking_status');
 }

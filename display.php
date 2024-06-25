@@ -86,10 +86,10 @@
 
 
                 <p class="flatsome-registration-form__code">
-                    <label class="nbee_label"><?php _e('Application code') ?></label>
-                    <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" value="<?php echo get_option('nbee_client_key') ?>" name="nbee_client_key" class="code" style="width:100%;padding:10px 16px;">
+                    <label class="nbee_label"><?php _e('Client public key') ?></label>
+                    <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" value="<?php echo get_option('nbee_client_public_key') ?>" name="nbee_client_public_key" class="code" style="width:100%;padding:10px 16px;">
                 </p>
-                <p class="description" id="tagline-description"><?php _e('The application code is a code obtained from the CRM. You access it using the administrator account on nBee CRM, then go to Settings > SSO.') ?></p>
+                <p class="description" id="tagline-description"><?php _e('The "Client public key" is a key obtained from the CRM. You access it using the administrator account on nBee CRM, then go to Settings > SSO.') ?></p>
 
                 <p>
                     <input type="checkbox" checked="" readonly="" onclick="return false;">
@@ -187,6 +187,19 @@
                 </label>
             </p>
             <p class="description help-text"><?php _e('The User Tracking function monitors user activities, collects device information for analysis, and helps prevent spam.') ?></p>
+
+
+            <h4><?php _e('nBee Advance User Tracking') ?></h4>
+            <p>
+                <label for="nbee_advance_user_tracking_status">
+                    <input type="checkbox" <?php echo get_option('nbee_advance_user_tracking_status') == 1 ? 'checked' : '' ?> name="nbee_advance_user_tracking_status" id="nbee_advance_user_tracking_status" />
+                    <?php _e('Turn on Advance User Tracking feature for website.') ?>
+                </label>
+            </p>
+            <p class="description help-text"><?php _e('The "Advance User Tracking" function will add USER_ID to Google Analytics, but you have to turn this feature on in Google Analytics. Go to Gooogle and Search with keyword: "Enable User ID Tracking in Google Analytics" ') ?></p>
+
+
+
 
             <button class="button button-large button-primary" type="submit"><?php _e('Save setting') ?></button>
 

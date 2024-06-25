@@ -27,7 +27,7 @@
      */
     if ($auth_callback && $oauth_access_token) {
         $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
-        $nbee_client_key = get_option('nbee_client_key');
+        $nbee_client_public_key = get_option('nbee_client_public_key');
         $response = wp_remote_get(
             esc_url_raw( $nbee_backend_crm_uri . '/user' ),
             array(
@@ -35,7 +35,7 @@
                     'Content-Type' => 'application/json',
                     'X-Authorization' => $oauth_access_token,
                     'referer' => home_url(),
-                    'X-Client-Key' => $nbee_client_key
+                    'X-Client-Key' => $nbee_client_public_key
                 )
             )
         );

@@ -33,6 +33,18 @@ function nbee_add_tracking_to_header() {
     $nbee_google_tracking_status = get_option("nbee_google_tracking_status", 0);
     if ( $nbee_google_tracking_status ) {
         $nbee_google_analytics_key = get_option("nbee_google_analytics_key", '');
+        $nbee_advance_user_tracking_status = get_option("nbee_advance_user_tracking_status", '');
+
+        $extraGooogleAnalyticsSetting = '';
+        if ( $nbee_advance_user_tracking_status ) {
+            $extraGooogleAnalyticsSetting = "
+                gtag('config', 'GA_MEASUREMENT_ID', {
+                    'user_id': window.__passport || ''
+                });
+            ";
+        }
+
+
         if ( $nbee_google_analytics_key ) {
             printf("
             <!-- Google tag (gtag.js) -->
@@ -42,8 +54,10 @@ function nbee_add_tracking_to_header() {
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '%s');
+                
+                %s
             </script>
-            ", $nbee_google_analytics_key,  $nbee_google_analytics_key );    
+            ", $nbee_google_analytics_key,  $nbee_google_analytics_key, $extraGooogleAnalyticsSetting );    
         }
     }
 
