@@ -15,8 +15,11 @@
  * Domain Path:       /languages
  */
 
-    define("NBEE_PLUGIN_VERSION", '1.0.0');
+define("NBEE_PLUGIN_VERSION", '1.0.0');
+
+if (! defined('LOGGED_IN_KEY')) {
     define('LOGGED_IN_KEY', 'jhgUYFUhg87658');
+}
 
 
  include ( __DIR__ . "/formsaving.php");
