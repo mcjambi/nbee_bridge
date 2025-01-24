@@ -41,6 +41,14 @@ function nbee_admin_menu()
         'nbee_referrer_tracking',
         'nbee_display_main'
     );
+    add_submenu_page(
+        'nbee_bridge',
+        __('E-commerce Sync', 'textdomain'),
+        __('E-commerce Sync', 'textdomain'),
+        'manage_options',
+        'nbee_ecommerce_sync',
+        'nbee_display_main'
+    );
 }
 add_action('admin_menu', 'nbee_admin_menu');
 

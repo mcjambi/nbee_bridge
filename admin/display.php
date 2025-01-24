@@ -22,9 +22,13 @@ function nbee_admin_tab()
         <a href="<?php echo admin_url('admin.php?page=nbee_referrer_tracking') ?>" class="nav-tab <?php echo $admin_page === 'nbee_referrer_tracking' ? 'nav-tab-active' : 'nav-tab' ?>">
             <?php _e('Referrer Tracking') ?>
         </a>
+        <a href="<?php echo admin_url('admin.php?page=nbee_ecommerce_sync') ?>" class="nav-tab <?php echo $admin_page === 'nbee_ecommerce_sync' ? 'nav-tab-active' : 'nav-tab' ?>">
+            <?php _e('E-commerce Sync') ?>
+        </a>
     </h2>
 <?php
 }
+
 
 
 function nbee_display_main()
@@ -56,6 +60,9 @@ function nbee_display_main()
                             break;
                         case 'nbee_referrer_tracking':
                             nbee_referrer_tracking();
+                            break;
+                        case 'nbee_ecommerce_sync':
+                            nbee_ecommerce_sync();
                             break;
                     }
 
@@ -248,4 +255,68 @@ function nbee_referrer_tracking()
 
     </form>
 <?php
+}
+
+function nbee_ecommerce_sync()
+{
+?>
+    <h3><?php _e('E-commerce Sync') ?></h3>
+    <form action="<?php echo admin_url('admin-post.php') ?>" method="POST" autocomplete="off">
+        <?php wp_nonce_field('nbee_ecommerce_sync'); ?>
+
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_product_catalog"><?php _e('Sync product catalog') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_products"><?php _e('Sync products') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_product_reviews"><?php _e('Sync product reviews') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_payment_methods"><?php _e('Sync payment methods') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_shipping_methods"><?php _e('Sync shipping methods') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_promotions"><?php _e('Sync promotions') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_orders"><?php _e('Sync orders') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_customers"><?php _e('Sync customers') ?></button>
+        <button class="button button-large button-primary" type="submit" name="sync_action" value="sync_store_settings"><?php _e('Sync store settings') ?></button>
+    </form>
+<?php
+}
+
+add_action('admin_post_nbee_ecommerce_sync', 'nbee_ecommerce_sync_handler');
+
+function nbee_ecommerce_sync_handler()
+{
+    if (!isset($_POST['sync_action']) || !check_admin_referer('nbee_ecommerce_sync')) {
+        return;
+    }
+
+    $sync_action = sanitize_text_field($_POST['sync_action']);
+
+    switch ($sync_action) {
+        case 'sync_product_catalog':
+            // Add your sync logic here
+            break;
+        case 'sync_products':
+            // Add your sync logic here
+            break;
+        case 'sync_product_reviews':
+            // Add your sync logic here
+            break;
+        case 'sync_payment_methods':
+            // Add your sync logic here
+            break;
+        case 'sync_shipping_methods':
+            // Add your sync logic here
+            break;
+        case 'sync_promotions':
+            // Add your sync logic here
+            break;
+        case 'sync_orders':
+            // Add your sync logic here
+            break;
+        case 'sync_customers':
+            // Add your sync logic here
+            break;
+        case 'sync_store_settings':
+            // Add your sync logic here
+            break;
+    }
+
+    wp_redirect(admin_url('admin.php?page=nbee_ecommerce_sync'));
+    exit;
 }

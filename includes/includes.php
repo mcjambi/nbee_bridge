@@ -16,11 +16,6 @@ class NBee_Bridge
         // Tải các tệp admin và public
         if (is_admin()) {
             require_once NBEE_PLUGIN_PATH . 'admin/admin.php';
-
-            require_once NBEE_PLUGIN_PATH . 'includes/formsaving.php';
-            require_once NBEE_PLUGIN_PATH . 'includes/referrer.php';
-            require_once NBEE_PLUGIN_PATH . 'includes/sso.php';
-            require_once NBEE_PLUGIN_PATH . 'includes/user.tracking.php';
         } else {
             require_once NBEE_PLUGIN_PATH . 'public/public.php';
         }

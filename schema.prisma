@@ -1,0 +1,2089 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model app {
+  ID                 BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  app_name           String  @db.VarChar(100)
+  app_description    String  @db.VarChar(150)
+  app_type           String  @default("android_app") @db.VarChar(15)
+  client_private_key String  @unique(map: "client_private_key_2") @db.VarChar(40)
+  status             Int     @default(1) @db.UnsignedSmallInt
+  createdAt          BigInt  @db.UnsignedBigInt
+  app_homepage       String? @db.VarChar(150)
+  app_slug           String? @unique(map: "app_slug") @db.VarChar(100)
+  app_thumbnail      String? @db.VarChar(250)
+  client_public_key  String  @unique(map: "client_public_key") @db.Char(40)
+
+  @@index([client_private_key], map: "client_private_key")
+  @@index([app_type], map: "app_type")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model comment {
+  comment_id      BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_title   String? @db.VarChar(150)
+  comment_content String  @db.Text
+  object_id       BigInt  @db.UnsignedBigInt
+  comment_type    String  @default("comment") @db.VarChar(20)
+  comment_parent  BigInt? @db.UnsignedBigInt
+  comment_status  String  @default("draft") @db.VarChar(15)
+  comment_point   Int     @default(0) @db.UnsignedInt
+  createdBy       BigInt  @db.UnsignedBigInt
+  createdAt       BigInt
+  updatedAt       BigInt?
+  user            user    @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_1")
+
+  @@index([comment_parent], map: "comment_parent")
+  @@index([createdBy], map: "createdBy")
+  @@index([object_id], map: "object_id")
+}
+
+model incoming_webhook {
+  api_id               BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  api_name             String                 @db.VarChar(250)
+  api_slug             String                 @unique(map: "api_slug_2") @db.VarChar(250)
+  api_description      String                 @db.VarChar(250)
+  api_access_token     String                 @db.VarChar(45)
+  api_access_method    String                 @default("post") @db.VarChar(10)
+  api_role             String                 @default("user") @db.VarChar(10)
+  api_enable           Int                    @default(0) @db.UnsignedInt
+  api_count_request    Int                    @default(0) @db.UnsignedInt
+  default_webhook      Int                    @default(0) @db.UnsignedSmallInt
+  createdAt            BigInt                 @db.UnsignedBigInt
+  updatedAt            BigInt?                @db.UnsignedBigInt
+  lastOpen             BigInt?                @db.UnsignedBigInt
+  incoming_webhook_log incoming_webhook_log[]
+
+  @@index([api_access_token], map: "api_access_token")
+  @@index([api_slug], map: "api_slug")
+}
+
+model incoming_webhook_log {
+  log_id              BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  incoming_webhook_id BigInt           @db.UnsignedBigInt
+  log_ip              String           @db.VarChar(40)
+  log_method          String           @db.VarChar(5)
+  createdAt           BigInt
+  incoming_webhook    incoming_webhook @relation(fields: [incoming_webhook_id], references: [api_id], onDelete: Cascade, onUpdate: NoAction, map: "incoming_webhook_log_ibfk_1")
+
+  @@index([incoming_webhook_id], map: "incoming_webhook_id")
+}
+
+model logistic_service {
+  logistic_id                BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  logistic_name              String                     @db.VarChar(200)
+  module                     String?                    @unique(map: "module") @db.VarChar(20)
+  logistic_description       String?                    @db.VarChar(255)
+  logistic_count             Int                        @default(0) @db.UnsignedInt
+  logistic_delivery_method   String?                    @db.VarChar(250)
+  logistic_fee               Int                        @default(-1) @db.MediumInt
+  logistic_status            Int                        @default(0) @db.UnsignedSmallInt
+  logistic_api_require_field String?                    @db.VarChar(150)
+  logistic_insurance_fee     Json?
+  createdAt                  BigInt                     @db.UnsignedBigInt
+  logistic_service_account   logistic_service_account[]
+  order_fulfillment          order_fulfillment[]
+}
+
+model logistic_service_account {
+  ID                   BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  logistic_token       String?          @db.VarChar(500)
+  logistic_username    String?          @db.VarChar(150)
+  logistic_password    String?          @db.VarChar(150)
+  logistic_phonenumber String?          @db.VarChar(11)
+  logistic_shop_id     String?          @db.VarChar(250)
+  logistic_service_id  BigInt           @db.UnsignedBigInt
+  stock_id             BigInt           @db.UnsignedBigInt
+  hash                 String           @unique(map: "hash") @db.VarChar(40)
+  test_status          String?          @db.VarChar(10)
+  createdAt            BigInt           @db.UnsignedBigInt
+  logistic_service     logistic_service @relation(fields: [logistic_service_id], references: [logistic_id], onDelete: Cascade, onUpdate: Restrict, map: "logistic_service_account_ibfk_1")
+  stock                stock            @relation(fields: [stock_id], references: [stock_id], onDelete: Cascade, onUpdate: Restrict, map: "logistic_service_account_ibfk_2")
+
+  @@index([logistic_service_id], map: "logistic_service_id")
+  @@index([stock_id], map: "stock_id")
+}
+
+model media {
+  media_id                 BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  media_url                String                     @db.VarChar(500)
+  media_filename           String?                    @db.VarChar(250)
+  media_description        String?                    @db.VarChar(500)
+  media_filetype           String?                    @db.VarChar(80)
+  media_filesize           Float                      @default(1) @db.Float
+  media_extention          String?                    @db.VarChar(150)
+  media_thumbnail          Json?
+  private_access           Int                        @default(1)
+  is_generated_thumbnail   Int                        @default(0) @db.UnsignedSmallInt
+  is_sync_to_r2            Int                        @default(0) @db.UnsignedSmallInt
+  createdBy                BigInt                     @db.UnsignedBigInt
+  createdAt                BigInt                     @db.UnsignedBigInt
+  updatedAt                BigInt?                    @db.UnsignedBigInt
+  achievement              achievement[]
+  banner                   banner[]
+  contactform_media        contactform_media[]
+  game_lucky_wheel_present game_lucky_wheel_present[]
+  gift                     gift[]
+  user                     user                       @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "media_ibfk_1")
+  post_category            post_category[]
+  posts                    posts[]
+  product                  product[]
+  product_brand            product_brand[]
+  product_category         product_category[]
+  product_to_media         product_to_media[]
+  product_variant          product_variant[]
+  review_media             review_media[]
+  social_post_media        social_post_media[]
+  user_group               user_group[]
+  voucher                  voucher[]
+
+  @@index([createdBy], map: "createdBy")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notification {
+  notification_id       BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  notification_title    String             @db.VarChar(150)
+  notification_content  String             @db.VarChar(450)
+  notification_category String             @default("general") @db.VarChar(50)
+  notification_image    String?            @db.VarChar(255)
+  notification_channel  String?            @db.VarChar(50)
+  notification_user     BigInt?            @db.UnsignedBigInt
+  notification_data     String?            @db.VarChar(1000)
+  createdAt             BigInt             @db.UnsignedBigInt
+  createdBy             BigInt?            @db.UnsignedBigInt
+  user                  user?              @relation(fields: [notification_user], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "notification_ibfk_2")
+  notification_meta     notification_meta?
+
+  @@index([createdBy], map: "createdBy")
+  @@index([notification_user], map: "notification_user")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notification_meta {
+  notification_meta_id       BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  notification_id            BigInt       @unique(map: "notification_id") @db.UnsignedBigInt
+  notification_meta_status   Int          @default(0) @db.SmallInt
+  notification_meta_schedule BigInt?      @db.UnsignedBigInt
+  createdAt                  BigInt       @db.UnsignedBigInt
+  notification               notification @relation(fields: [notification_id], references: [notification_id], onDelete: Cascade, onUpdate: Restrict, map: "notification_meta_ibfk_1")
+}
+
+model order_fee {
+  order_fee_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id        BigInt @db.UnsignedBigInt
+  order_fee_name  String @db.VarChar(50)
+  order_fee_value Int
+  createdAt       BigInt @db.UnsignedBigInt
+  orders          orders @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction, map: "order_fee_ibfk_1")
+
+  @@index([order_id], map: "order_id")
+}
+
+model order_product {
+  order_product_id BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id         BigInt           @db.UnsignedBigInt
+  product_id       BigInt           @db.UnsignedBigInt
+  variant_id       BigInt?          @db.UnsignedBigInt
+  quantity         Int              @default(1)
+  price            Int              @default(1) @db.UnsignedInt
+  original_price   Int              @default(1) @db.UnsignedInt
+  hash             String?          @unique(map: "hash") @db.VarChar(40)
+  orders           orders           @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction, map: "order_product_ibfk_1")
+  product          product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction, map: "order_product_ibfk_2")
+  product_variant  product_variant? @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: NoAction, map: "order_product_ibfk_3")
+
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
+  @@index([variant_id], map: "variant_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model orders {
+  order_id                   BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  order_pnr                  String                 @unique(map: "order_pnr_2") @db.Char(10)
+  user_id                    BigInt?                @db.UnsignedBigInt
+  order_total_price          Int                    @default(0) @db.UnsignedInt
+  order_total_original_price Int                    @default(0) @db.UnsignedInt
+  order_total_fee            Int                    @default(0)
+  order_total_paid           Int                    @default(0)
+  order_total_mustpay        Int?
+  order_note                 String?                @db.VarChar(500)
+  order_print_packing_slip   Int                    @default(0) @db.UnsignedSmallInt
+  order_has_physical_product Int                    @default(0) @db.UnsignedSmallInt
+  order_delivery_type        Int                    @default(0) @db.UnsignedSmallInt
+  payment_type               String?                @default("cod") @db.VarChar(10)
+  payment_status             Int                    @default(0) @db.UnsignedSmallInt
+  order_status               Int                    @default(9) @db.UnsignedInt
+  order_checked              Int                    @default(0) @db.UnsignedSmallInt
+  createdAt                  BigInt                 @db.UnsignedBigInt
+  createdBy                  BigInt?                @db.UnsignedBigInt
+  updatedAt                  BigInt?
+  group_income_order         group_income_order[]
+  order_bounty               order_bounty[]
+  order_fee                  order_fee[]
+  order_fulfillment          order_fulfillment?
+  order_log                  order_log[]
+  order_product              order_product[]
+  order_to_stock             order_to_stock?
+  order_to_voucher           order_to_voucher[]
+  order_transport_log        order_transport_log[]
+  user                       user?                  @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "orders_ibfk_1")
+  customer_data              user?                  @relation("orders_user_idTouser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "orders_ibfk_4")
+  review                     review[]
+  transaction_to_order       transaction_to_order[]
+  user_to_orders             user_to_orders[]
+
+  @@index([createdBy], map: "createdBy")
+  @@index([user_id], map: "customer_id")
+  @@index([order_pnr], map: "order_pnr")
+}
+
+model phonelog {
+  id            BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  direction     String   @db.VarChar(10)
+  source        String   @db.VarChar(14)
+  destination   String   @db.VarChar(14)
+  disposition   String   @db.VarChar(15)
+  recordingfile String?  @db.VarChar(1000)
+  duration      Int      @default(0) @db.UnsignedSmallInt
+  uuid          String   @unique(map: "uuid") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @db.DateTime(0)
+
+  @@index([destination], map: "destination")
+  @@index([source], map: "source")
+}
+
+model posts {
+  post_id                 BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  post_name               String             @unique(map: "post_name_2") @db.VarChar(200)
+  post_title              String?            @db.VarChar(500)
+  post_excerpt            String?            @db.VarChar(300)
+  post_content            String?            @db.LongText
+  post_status             String             @default("publish") @db.VarChar(20)
+  comment_status          Int                @default(0) @db.UnsignedInt
+  post_type               String             @default("page") @db.VarChar(20)
+  post_parent             BigInt             @default(0) @db.UnsignedBigInt
+  post_thumbnail          BigInt?            @db.UnsignedBigInt
+  comment_count           Int                @default(0) @db.UnsignedInt
+  createdBy               BigInt             @db.UnsignedBigInt
+  createdAt               BigInt             @db.UnsignedBigInt
+  updatedAt               BigInt?            @db.UnsignedBigInt
+  post_to_category        post_to_category[]
+  author                  user               @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "posts_ibfk_1")
+  post_thumbnail_to_media media?             @relation(fields: [post_thumbnail], references: [media_id], onUpdate: Restrict, map: "posts_ibfk_2")
+
+  @@index([createdBy], map: "post_author")
+  @@index([post_name], map: "post_name")
+  @@index([post_thumbnail], map: "post_thumbnail")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product {
+  product_id                 BigInt                       @id @default(autoincrement()) @db.UnsignedBigInt
+  product_name               String                       @db.VarChar(250)
+  product_slug               String?                      @unique(map: "product_slug") @db.VarChar(250)
+  product_description        String?                      @db.Text
+  product_excerpt            String?                      @db.VarChar(250)
+  product_thumbnail          BigInt?                      @db.UnsignedBigInt
+  product_price              Int                          @default(1) @db.UnsignedInt
+  product_original_price     Int                          @default(1) @db.UnsignedInt
+  product_price_range        String?                      @db.VarChar(100)
+  product_type               String?                      @default("normal") @db.Char(10)
+  product_sku                String?                      @unique(map: "product_sku") @db.VarChar(50)
+  product_barcode            String?                      @unique(map: "product_barcode") @db.VarChar(48)
+  product_size_length        Float                        @default(0) @db.Float
+  product_size_width         Float                        @default(0) @db.Float
+  product_size_height        Float                        @default(0) @db.Float
+  product_size_weight        Float                        @default(0) @db.Float
+  product_measurement_unit   String?                      @db.VarChar(20)
+  product_has_variants       Int                          @default(0) @db.UnsignedSmallInt
+  product_has_commission     Int                          @default(-1) @db.SmallInt
+  product_has_rebate         Int                          @default(-1) @db.SmallInt
+  product_has_tiered_rebate  Int                          @default(-1) @db.SmallInt
+  product_badge              String?                      @db.VarChar(250)
+  product_tags               String?                      @db.VarChar(255)
+  is_sensitive               Int                          @default(0) @db.UnsignedSmallInt
+  product_status             Int                          @default(0) @db.UnsignedInt
+  createdAt                  BigInt                       @db.UnsignedBigInt
+  createdBy                  BigInt                       @db.UnsignedBigInt
+  group_income_order         group_income_order[]
+  order_product              order_product[]
+  user                       user                         @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "product_ibfk_1")
+  product_thumbnail_to_media media?                       @relation(fields: [product_thumbnail], references: [media_id], onUpdate: NoAction, map: "product_ibfk_2")
+  product_commission         product_commission[]
+  product_commission_advance product_commission_advance[]
+  product_group_income       product_group_income?
+  product_meta               product_meta?
+  product_rebate             product_rebate[]
+  product_tiered_rebate      product_tiered_rebate[]
+  product_to_brand           product_to_brand?
+  product_to_category        product_to_category[]
+  product_to_collection      product_to_collection[]
+  product_to_media           product_to_media[]
+  product_variant            product_variant[]
+  product_variant_group      product_variant_group[]
+  product_wishlist           product_wishlist[]
+  review                     review[]
+  shopping_cart_item         shopping_cart_item[]
+  social_post                social_post[]
+
+  @@index([createdBy], map: "createdBy")
+  @@index([product_type], map: "product_type")
+  @@index([product_thumbnail], map: "product_thumbnail")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model session {
+  ID                    BigInt                 @id @default(autoincrement()) @db.UnsignedBigInt
+  session_id            String                 @unique(map: "session_id") @db.VarChar(50)
+  device_id             BigInt?                @unique(map: "device_id") @db.UnsignedBigInt
+  user_id               BigInt                 @db.UnsignedBigInt
+  session_signature     String?                @db.VarChar(200)
+  session_active        Int?                   @default(1) @db.UnsignedInt
+  session_ip            String?                @db.VarChar(30)
+  createdAt             BigInt                 @db.UnsignedBigInt
+  updatedAt             BigInt?                @db.UnsignedBigInt
+  expiredAt             BigInt                 @db.UnsignedBigInt
+  user                  user                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "session_ibfk_1")
+  device                device?                @relation(fields: [device_id], references: [device_id], onDelete: Cascade, onUpdate: Restrict, map: "session_ibfk_2")
+  session_refresh_token session_refresh_token?
+
+  @@index([device_id], map: "session_agent_UUID")
+  @@index([session_id], map: "session_id_2")
+  @@index([user_id], map: "user_id")
+}
+
+model settings {
+  setting_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  setting_name  String  @unique(map: "setting_name") @db.VarChar(55)
+  setting_value String? @db.VarChar(1000)
+  createdAt     BigInt  @db.UnsignedBigInt
+  updatedAt     BigInt? @db.UnsignedBigInt
+}
+
+model sms {
+  sms_id        BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  sms_thread_id BigInt     @db.UnsignedBigInt
+  sms_content   String?    @db.VarChar(1000)
+  sms_mode      String     @default("in") @db.VarChar(3)
+  createdAt     BigInt     @db.UnsignedBigInt
+  sms_thread    sms_thread @relation(fields: [sms_thread_id], references: [sms_thread_id], onDelete: Cascade, onUpdate: Restrict, map: "sms_thread_data")
+
+  @@index([sms_thread_id], map: "sms_subject")
+}
+
+model stock {
+  stock_id                 BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  stock_name               String                     @db.VarChar(100)
+  stock_slug               String                     @unique(map: "stock_slug") @db.VarChar(200)
+  stock_code               String?                    @unique(map: "stock_code") @db.VarChar(50)
+  stock_address            String?                    @db.VarChar(200)
+  stock_address_city       String?                    @db.Char(6)
+  stock_address_district   String?                    @db.Char(6)
+  stock_address_ward       String?                    @db.Char(6)
+  stock_payment_info       Json?
+  manager                  String?                    @db.VarChar(50)
+  hotline                  String?                    @db.VarChar(12)
+  is_default               Int                        @default(0) @db.UnsignedSmallInt
+  createdAt                BigInt                     @db.UnsignedBigInt
+  logistic_service_account logistic_service_account[]
+  order_to_stock           order_to_stock[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transactions {
+  transaction_id       BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  sender_wallet_id     BigInt                @db.UnsignedBigInt
+  receiver_wallet_id   BigInt                @db.UnsignedBigInt
+  amount               Decimal               @db.Decimal(15, 0)
+  transaction_type     String?               @default("debit") @db.VarChar(15)
+  transaction_category String                @db.VarChar(20)
+  transaction_note     String                @db.VarChar(1000)
+  transaction_hash     String                @db.VarChar(40)
+  createdAt            BigInt                @db.UnsignedBigInt
+  createdBy            BigInt?               @db.UnsignedBigInt
+  transaction_to_order transaction_to_order?
+  wallet_receiver      wallet                @relation(fields: [receiver_wallet_id], references: [wallet_id], onDelete: Cascade, onUpdate: Restrict, map: "transactions_ibfk_1")
+  creator_to_user      user?                 @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "transactions_ibfk_2")
+  wallet_sender        wallet                @relation("transactions_sender_wallet_idTowallet", fields: [sender_wallet_id], references: [wallet_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_sender")
+
+  @@index([receiver_wallet_id], map: "receiver_wallet_id")
+  @@index([sender_wallet_id], map: "sender_wallet_id")
+  @@index([transaction_hash], map: "transaction_hash")
+  @@index([createdBy], map: "createdBy")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  user_id                                               BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_login                                            String?                 @unique(map: "user_login") @db.VarChar(60)
+  user_email                                            String?                 @unique(map: "user_email_2") @db.VarChar(60)
+  user_phonenumber                                      String?                 @unique(map: "user_phonenumber") @db.VarChar(20)
+  user_password                                         String?                 @db.VarChar(70)
+  user_title                                            String?                 @db.VarChar(10)
+  display_name                                          String?                 @db.VarChar(60)
+  bio                                                   String?                 @db.Text
+  user_role                                             String                  @default("customer") @db.VarChar(50)
+  user_status                                           Int                     @default(0) @db.UnsignedInt
+  user_birthday                                         DateTime?               @db.Date
+  user_avatar                                           String?                 @db.VarChar(250)
+  user_gender                                           String                  @default("male") @db.VarChar(8)
+  user_address                                          String?                 @db.VarChar(100)
+  user_address_city                                     String?                 @db.Char(6)
+  user_address_district                                 String?                 @db.Char(6)
+  user_address_ward                                     String?                 @db.Char(6)
+  user_rate                                             Float                   @default(0) @db.Float
+  user_rate_count                                       Int                     @default(0) @db.UnsignedSmallInt
+  user_achievement_count                                Int                     @default(0) @db.UnsignedMediumInt
+  user_verified_email                                   Int                     @default(0) @db.UnsignedSmallInt
+  user_verified_phone                                   Int                     @default(0) @db.UnsignedSmallInt
+  user_verified_profile                                 Int                     @default(0) @db.UnsignedSmallInt
+  referrer_code                                         String?                 @unique(map: "referrer_code") @db.Char(12)
+  createdAt                                             BigInt                  @db.UnsignedBigInt
+  updatedAt                                             BigInt?                 @db.UnsignedBigInt
+  createdBy                                             BigInt?                 @db.UnsignedBigInt
+  lastActive                                            BigInt?
+  comment                                               comment[]
+  contactform                                           contactform[]
+  contactform_contactform_updatedByTouser               contactform[]           @relation("contactform_updatedByTouser")
+  customer_to_user                                      customer_to_user?
+  game_checkin_join                                     game_checkin_join?
+  game_checkin_log                                      game_checkin_log[]
+  game_lucky_wheel_rank                                 game_lucky_wheel_rank[]
+  gift                                                  gift[]
+  group_income_order                                    group_income_order[]
+  media                                                 media[]
+  notification                                          notification[]
+  notification_to_user                                  notification_to_user?
+  order_bounty                                          order_bounty[]
+  orders                                                orders[]
+  orders_orders_user_idTouser                           orders[]                @relation("orders_user_idTouser")
+  passkey                                               passkey[]
+  posts                                                 posts[]
+  product                                               product[]
+  product_wishlist                                      product_wishlist[]
+  redeem_request_redeem_request_user_idTouser           redeem_request[]        @relation("redeem_request_user_idTouser")
+  redeem_request_redeem_request_updatedByTouser         redeem_request[]        @relation("redeem_request_updatedByTouser")
+  review                                                review[]
+  session                                               session[]
+  shopping_cart                                         shopping_cart?
+  social_post                                           social_post[]
+  social_post_comment                                   social_post_comment[]
+  social_post_like                                      social_post_like[]
+  transactions                                          transactions[]
+  user                                                  user?                   @relation("userTouser", fields: [createdBy], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "customer_count")
+  customers                                             user[]                  @relation("userTouser")
+  user_activity                                         user_activity[]
+  user_address_book                                     user_address_book[]
+  user_bank_information                                 user_bank_information?
+  user_group                                            user_group[]
+  user_meta                                             user_meta[]
+  user_onetimepassword                                  user_onetimepassword?
+  user_point                                            user_point[]
+  referrer                                              user_referrer?          @relation("user_referrer_user_idTouser")
+  referred                                              user_referrer[]         @relation("user_referrer_user_referrer_idTouser")
+  user_social_profile                                   user_social_profile[]
+  user_to_achievement                                   user_to_achievement[]
+  user_to_contactform                                   user_to_contactform[]
+  user_to_customer                                      user_to_customer[]      @relation("user_to_customer_customer_idTouser")
+  assigner                                              user_to_customer[]      @relation("user_to_customer_user_idTouser")
+  user_to_device                                        user_to_device[]
+  user_to_group                                         user_to_group[]
+  user_to_job                                           user_to_job[]
+  user_to_orders                                        user_to_orders[]
+  user_to_rank                                          user_to_rank?
+  user_verified_user_verified_updatedByTouser           user_verified[]         @relation("user_verified_updatedByTouser")
+  user_verified                                         user_verified?
+  vouncher_to_user                                      vouncher_to_user[]
+  wallet                                                wallet[]
+  wallet_code_wallet_code_used_byTouser                 wallet_code[]           @relation("wallet_code_used_byTouser")
+  wallet_code_wallet_code_createdByTouser               wallet_code[]           @relation("wallet_code_createdByTouser")
+  wallet_code_to_user                                   wallet_code_to_user[]
+  withdrawal_request_withdrawal_request_user_idTouser   withdrawal_request[]    @relation("withdrawal_request_user_idTouser")
+  withdrawal_request_withdrawal_request_updatedByTouser withdrawal_request[]    @relation("withdrawal_request_updatedByTouser")
+
+  @@index([createdBy], map: "createdBy")
+  @@index([user_email], map: "user_email")
+}
+
+model user_meta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  meta_key   String  @db.VarChar(50)
+  meta_value String? @db.Text
+  createdBy  BigInt  @db.UnsignedBigInt
+  createdAt  BigInt  @db.UnsignedBigInt
+  updatedAt  BigInt? @db.UnsignedBigInt
+  user       user    @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_meta_ibfk_1")
+
+  @@index([createdBy], map: "createdBy")
+  @@index([meta_key], map: "meta_key")
+}
+
+model user_activity {
+  activity_id     BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt  @db.UnsignedBigInt
+  activity_type   String  @default("TOUCH") @db.Char(15)
+  activity_source String? @db.VarChar(40)
+  createdAt       BigInt  @db.UnsignedBigInt
+  user            user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_activity_ibfk_1")
+
+  @@index([activity_source], map: "activity_source")
+  @@index([activity_type], map: "activity_type")
+  @@index([user_id], map: "customer_id")
+}
+
+model customer_to_user {
+  id                        BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                   BigInt  @unique(map: "user_id_2") @db.UnsignedBigInt
+  customer_note             String? @db.VarChar(255)
+  customer_order_count      Int     @default(0) @db.UnsignedMediumInt
+  customer_moneyspent_count Int     @default(0)
+  customer_referrer_count   Int     @default(0) @db.UnsignedInt
+  is_vip                    Int     @default(0) @db.UnsignedSmallInt
+  user                      user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "customer_to_user_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_to_customer {
+  id                                 BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                            BigInt @db.UnsignedBigInt
+  customer_id                        BigInt @db.UnsignedBigInt
+  createdAt                          BigInt @db.UnsignedBigInt
+  user_to_customer_customer_idTouser user   @relation("user_to_customer_customer_idTouser", fields: [customer_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_customer")
+  assignee                           user   @relation("user_to_customer_user_idTouser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_user")
+
+  @@index([customer_id], map: "customer_id")
+  @@index([user_id], map: "user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_to_orders {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @db.UnsignedBigInt
+  order_id  BigInt @db.UnsignedBigInt
+  createdAt BigInt @db.UnsignedBigInt
+  assignee  user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_orders_ibfk_1")
+  orders    orders @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_orders_ibfk_2")
+
+  @@index([order_id], map: "customer_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_referrer {
+  ID               BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt   @unique(map: "user_id_2") @db.UnsignedBigInt
+  user_referrer_id BigInt   @db.UnsignedBigInt
+  createdAt        DateTime @db.Date
+  customer_data    user     @relation("user_referrer_user_idTouser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_referrer_ibfk_1")
+  referrer_data    user     @relation("user_referrer_user_referrer_idTouser", fields: [user_referrer_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_referrer_ibfk_2")
+
+  @@index([user_referrer_id], map: "referrer")
+}
+
+model contactform {
+  contactform_id          BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                 BigInt?               @db.UnsignedBigInt
+  contactform_category    String                @default("general") @db.VarChar(150)
+  contactform_title       String?               @db.VarChar(150)
+  contactform_content     String?               @db.VarChar(2500)
+  contactform_email       String?               @db.VarChar(150)
+  contactform_name        String?               @db.VarChar(150)
+  contactform_numberphone String?               @db.VarChar(15)
+  contactform_status      Int                   @default(0) @db.UnsignedSmallInt
+  contactform_ip          String                @db.VarChar(40)
+  device_uuid             String?               @db.Char(70)
+  createdAt               BigInt                @db.UnsignedBigInt
+  updatedAt               BigInt?               @db.UnsignedBigInt
+  updatedBy               BigInt?               @db.UnsignedBigInt
+  user                    user?                 @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "contactform_ibfk_1")
+  updater                 user?                 @relation("contactform_updatedByTouser", fields: [updatedBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "contactform_ibfk_2")
+  contactform_media       contactform_media[]
+  user_to_contactform     user_to_contactform[]
+
+  @@index([user_id], map: "user_id")
+  @@index([contactform_ip], map: "contactform_ip")
+  @@index([updatedBy], map: "updateBy")
+  @@index([contactform_category], map: "contactform_category")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_to_contactform {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt      @db.UnsignedBigInt
+  contactform_id BigInt      @db.UnsignedBigInt
+  hash           BigInt?     @unique(map: "hash") @db.UnsignedBigInt
+  createdAt      BigInt      @db.UnsignedBigInt
+  contactform    contactform @relation(fields: [contactform_id], references: [contactform_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_contactform_ibfk_1")
+  assignee       user        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_contactform_ibfk_2")
+
+  @@index([contactform_id], map: "customer_id")
+  @@index([user_id], map: "user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model activity {
+  activity_id       BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  device_id         BigInt  @db.UnsignedBigInt
+  activity_referrer String? @db.VarChar(550)
+  activity_target   String? @db.VarChar(550)
+  activity_ip       String? @db.VarChar(50)
+  createdAt         BigInt  @db.UnsignedBigInt
+  device            device  @relation(fields: [device_id], references: [device_id], onDelete: Cascade, onUpdate: Restrict, map: "activity_ibfk_1")
+
+  @@index([device_id], map: "activity_uid")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model device {
+  device_id         BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  device_uuid       String           @unique(map: "device_uuid_2") @db.Char(165)
+  user_agent        String           @db.VarChar(250)
+  system_type       String           @db.VarChar(50)
+  device_debug_info String?          @db.VarChar(2500)
+  status            Int              @default(1) @db.UnsignedSmallInt
+  createdAt         BigInt           @db.UnsignedBigInt
+  activity          activity[]
+  passkey           passkey[]
+  session           session?
+  user_to_device    user_to_device[]
+
+  @@index([device_uuid], map: "device_uuid")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_to_device {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @db.UnsignedBigInt
+  device_id BigInt @db.UnsignedBigInt
+  user      user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_device_ibfk_1")
+  device    device @relation(fields: [device_id], references: [device_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_device_ibfk_2")
+
+  @@index([device_id], map: "device_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_social_profile {
+  social_id         BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id           BigInt @db.UnsignedBigInt
+  social_profile_id String @db.VarChar(150)
+  social_name       String @db.VarChar(100)
+  createdAt         BigInt @db.UnsignedBigInt
+  user              user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_social_profile_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model transaction_to_order {
+  id             BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  transaction_id BigInt       @unique(map: "transaction_id_2") @db.UnsignedBigInt
+  order_id       BigInt       @db.UnsignedBigInt
+  transactions   transactions @relation(fields: [transaction_id], references: [transaction_id], onDelete: Cascade, onUpdate: Restrict, map: "transaction_to_order_ibfk_1")
+  orders         orders       @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "transaction_to_order_ibfk_11")
+
+  @@index([order_id], map: "order_id")
+  @@index([transaction_id], map: "transaction_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model email_setting {
+  id                                                         BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  setting_type                                               String           @default("pop") @db.VarChar(10)
+  server_name                                                String?          @db.VarChar(99)
+  server_address                                             String           @db.VarChar(150)
+  server_port                                                Int              @default(465) @db.UnsignedSmallInt
+  server_username                                            String           @db.VarChar(90)
+  server_password                                            String           @db.VarChar(160)
+  server_secure_protocol                                     String           @db.VarChar(5)
+  server_interval                                            Int              @default(15) @db.UnsignedSmallInt
+  server_checked                                             Int
+  server_status                                              Int              @default(1) @db.UnsignedSmallInt
+  createdAt                                                  BigInt           @db.UnsignedBigInt
+  email_outgoing_email_outgoing_email_settingToemail_setting email_outgoing[] @relation("email_outgoing_email_settingToemail_setting")
+}
+
+model email_template {
+  id                                                           BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  template_name                                                String           @db.VarChar(150)
+  template_url                                                 String           @db.VarChar(2500)
+  createdAt                                                    BigInt           @db.UnsignedBigInt
+  createdBy                                                    BigInt           @db.UnsignedBigInt
+  email_outgoing_email_outgoing_email_templateToemail_template email_outgoing[] @relation("email_outgoing_email_templateToemail_template")
+
+  @@index([createdBy], map: "createdBy")
+}
+
+model email_incoming {
+  id         BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  message_id String  @unique(map: "message_id") @db.VarChar(150)
+  subject    String? @db.VarChar(1000)
+  from_email String  @db.VarChar(100)
+  from_name  String? @db.VarChar(150)
+  to_email   String? @db.VarChar(100)
+  createdAt  BigInt  @db.UnsignedBigInt
+}
+
+model email_outgoing {
+  id                              BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  subject                         String               @db.VarChar(200)
+  title                           String?              @db.VarChar(300)
+  content                         String               @db.Text
+  email_template                  BigInt?              @db.UnsignedBigInt
+  to_email                        String               @db.VarChar(100)
+  cc                              String?              @db.VarChar(2500)
+  bcc                             String?              @db.VarChar(2500)
+  email_setting                   BigInt               @db.UnsignedBigInt
+  createdAt                       BigInt               @db.UnsignedBigInt
+  createdBy                       BigInt?              @db.UnsignedBigInt
+  email_template_data             email_template?      @relation("email_outgoing_email_templateToemail_template", fields: [email_template], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "email_outgoing_ibfk_1")
+  email_outgoing_to_email_setting email_setting        @relation("email_outgoing_email_settingToemail_setting", fields: [email_setting], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "email_outgoing_ibfk_2")
+  email_outgoing_meta             email_outgoing_meta?
+
+  @@index([email_template], map: "email_template")
+  @@index([createdBy], map: "createdBy")
+  @@index([email_setting], map: "email_setting")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model email_outgoing_meta {
+  id                  BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  email_outgoing_id   BigInt         @unique(map: "email_outgoing_id_2") @db.UnsignedBigInt
+  email_sent_status   Int            @default(0) @db.SmallInt
+  email_sent_schedule BigInt         @db.UnsignedBigInt
+  createdAt           BigInt         @db.UnsignedBigInt
+  email_outgoing      email_outgoing @relation(fields: [email_outgoing_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "email_outgoing_meta_ibfk_1")
+
+  @@index([email_outgoing_id], map: "email_outgoing_id")
+}
+
+model achievement {
+  achievement_id              BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  achievement_badge           BigInt?               @db.UnsignedBigInt
+  achievement_interval        String                @default("yearly") @db.VarChar(15)
+  achievement_count           Int                   @default(0) @db.UnsignedInt
+  achievement_name            String                @db.VarChar(150)
+  achievement_slug            String                @unique(map: "achivement_slug") @db.VarChar(150)
+  achievement_description     String                @db.VarChar(250)
+  achievement_status          Int                   @default(1) @db.UnsignedSmallInt
+  achievement_condition_name  String                @default("") @db.VarChar(50)
+  achievement_condition_value Int?                  @default(0) @db.UnsignedInt
+  createdAt                   BigInt                @db.UnsignedBigInt
+  achievement_badge_to_media  media?                @relation(fields: [achievement_badge], references: [media_id], onUpdate: Restrict, map: "achievement_ibfk_1")
+  user_to_achievement         user_to_achievement[]
+
+  @@index([achievement_badge], map: "achievement_badge")
+}
+
+model user_to_achievement {
+  ID             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt      @db.UnsignedBigInt
+  achievement_id BigInt      @db.UnsignedBigInt
+  createdAt      BigInt      @db.UnsignedBigInt
+  achievement    achievement @relation(fields: [achievement_id], references: [achievement_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_achievement_ibfk_1")
+  user           user        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_achievement_ibfk_2")
+
+  @@index([achievement_id], map: "achivement_id")
+  @@index([user_id], map: "user")
+}
+
+model user_onetimepassword {
+  ID        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @unique(map: "user_id") @db.UnsignedBigInt
+  token     String @db.Char(80)
+  createdAt BigInt @db.UnsignedBigInt
+  user      user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_onetimepassword_ibfk_1")
+
+  @@index([token], map: "token")
+}
+
+model user_to_job {
+  ID      BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id BigInt @db.UnsignedBigInt
+  job_id  Int    @db.UnsignedSmallInt
+  user    user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_job_ibfk_1")
+
+  @@index([job_id], map: "job_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_to_active_code {
+  ID          BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id     BigInt @db.UnsignedBigInt
+  active_code Int    @db.UnsignedMediumInt
+  createdAt   BigInt @db.UnsignedBigInt
+
+  @@index([user_id], map: "user_id")
+}
+
+model session_refresh_token {
+  id            BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  session_id    BigInt  @unique(map: "session_id_2") @db.UnsignedBigInt
+  refresh_token String  @unique(map: "refresh_token") @db.Char(100)
+  expiredAt     BigInt  @db.UnsignedBigInt
+  session       session @relation(fields: [session_id], references: [ID], onDelete: Cascade, onUpdate: Restrict, map: "session_data")
+
+  @@index([session_id], map: "session_id")
+}
+
+model passkey {
+  ID            BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id       BigInt  @db.UnsignedBigInt
+  credential_id String  @unique(map: "credential_id") @db.VarChar(104)
+  credential    String? @db.VarChar(5000)
+  device_id     BigInt? @db.UnsignedBigInt
+  createdAt     BigInt  @db.UnsignedBigInt
+  updatedAt     BigInt? @db.UnsignedBigInt
+  device        device? @relation(fields: [device_id], references: [device_id], onDelete: Cascade, onUpdate: Restrict, map: "device_data")
+  user          user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user")
+
+  @@index([user_id], map: "user_id")
+  @@index([device_id], map: "device_id")
+}
+
+model session_shortlive {
+  ID        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @db.UnsignedBigInt
+  hash      String @db.Char(95)
+  createdAt BigInt @db.UnsignedBigInt
+  expiredAt BigInt @db.UnsignedBigInt
+
+  @@index([hash], map: "hash")
+  @@index([user_id], map: "user_id")
+}
+
+model blacklist_ip {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  ip        String @unique(map: "ip_2") @db.VarChar(40)
+  createdAt BigInt @db.UnsignedBigInt
+  expiredAt BigInt @db.UnsignedBigInt
+
+  @@index([ip], map: "ip")
+}
+
+model blacklist_device_uuid {
+  id          BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  device_uuid String @unique(map: "device_uuid_2") @db.Char(70)
+  createdAt   BigInt @db.UnsignedBigInt
+  expiredAt   BigInt @db.UnsignedBigInt
+
+  @@index([device_uuid], map: "device_uuid")
+}
+
+model sms_thread {
+  sms_thread_id     BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  sms_thread_number String? @unique(map: "thread_number_2") @db.VarChar(20)
+  sms_thread_read   Int     @default(0) @db.UnsignedSmallInt
+  sms_source        String? @db.VarChar(15)
+  createdAt         BigInt  @db.UnsignedBigInt
+  updatedAt         BigInt? @db.UnsignedBigInt
+  sms               sms[]
+
+  @@index([sms_thread_number], map: "thread_number")
+  @@index([sms_source], map: "sms_source")
+  @@index([sms_thread_number], map: "sms_thread_number")
+}
+
+model wallet {
+  wallet_id                                          BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  wallet_type_id                                     BigInt         @db.UnsignedBigInt
+  user_id                                            BigInt         @db.UnsignedBigInt
+  balance                                            Decimal        @db.Decimal(15, 0)
+  wallet_hash                                        String         @unique(map: "wallet_hash") @db.Char(40)
+  createdAt                                          BigInt         @db.UnsignedBigInt
+  updatedAt                                          BigInt?        @db.UnsignedBigInt
+  order_bounty                                       order_bounty[]
+  transactions                                       transactions[]
+  transactions_transactions_sender_wallet_idTowallet transactions[] @relation("transactions_sender_wallet_idTowallet")
+  user                                               user           @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_data")
+  wallet_type                                        wallet_type    @relation(fields: [wallet_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_type_data")
+
+  @@index([user_id], map: "user")
+  @@index([wallet_type_id], map: "wallet_type_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model wallet_type {
+  id                       BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  wallet_name              String                     @db.VarChar(150)
+  wallet_description       String                     @db.VarChar(1000)
+  wallet_unit              String                     @unique(map: "wallet_unit_2") @db.VarChar(15)
+  wallet_sign              String?                    @db.VarChar(10)
+  rank_allowed             Int                        @default(0) @db.UnsignedInt
+  is_allowed_withdraw      Int                        @default(0) @db.UnsignedSmallInt
+  withdraw_min_allowed     Int                        @default(1) @db.UnsignedInt
+  withdraw_min_balance     Int?                       @default(0) @db.UnsignedInt
+  is_default               Int                        @default(0) @db.UnsignedSmallInt
+  createdAt                BigInt                     @db.UnsignedBigInt
+  game_lucky_wheel_present game_lucky_wheel_present[]
+  gift                     gift[]
+  redeem_request           redeem_request[]
+  wallet                   wallet[]
+  wallet_code              wallet_code[]
+
+  @@index([wallet_unit], map: "wallet_unit")
+}
+
+model product_category {
+  category_id                 BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  category_name               String                @db.VarChar(150)
+  category_excerpt            String?               @db.VarChar(255)
+  category_description        String?               @db.VarChar(1000)
+  category_slug               String                @unique(map: "category_slug") @db.VarChar(250)
+  category_tags               String?               @db.VarChar(255)
+  category_thumbnail          BigInt?               @db.UnsignedBigInt
+  category_order              Int                   @default(0) @db.UnsignedSmallInt
+  category_status             Int                   @default(1) @db.UnsignedSmallInt
+  createdAt                   BigInt                @db.UnsignedBigInt
+  category_thumbnail_to_media media?                @relation(fields: [category_thumbnail], references: [media_id], onUpdate: Restrict, map: "product_category_ibfk_1")
+  product_to_category         product_to_category[]
+
+  @@index([category_thumbnail], map: "category_thumbnail")
+}
+
+model product_collection {
+  collection_id          BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  collection_name        String                  @db.VarChar(150)
+  collection_slug        String                  @unique(map: "collection_slug") @db.VarChar(150)
+  collection_excerpt     String?                 @db.VarChar(255)
+  collection_description String?                 @db.Text
+  collection_status      Int                     @default(1) @db.UnsignedSmallInt
+  collection_order       Int                     @default(0) @db.UnsignedSmallInt
+  createdAt              BigInt                  @db.UnsignedBigInt
+  product_to_collection  product_to_collection[]
+}
+
+model product_to_category {
+  id                        BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id                BigInt           @db.UnsignedBigInt
+  category_id               BigInt           @db.UnsignedBigInt
+  product_to_category_order Int              @default(0) @db.UnsignedInt
+  pin_to_top                Int              @default(0) @db.UnsignedSmallInt
+  relationship_hash         String?          @unique(map: "relationship_hash") @db.VarChar(40)
+  createdAt                 BigInt?          @db.UnsignedBigInt
+  product_category          product_category @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_category_ibfk_1")
+  product                   product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_category_ibfk_2")
+
+  @@index([category_id], map: "category_id")
+  @@index([product_id], map: "product_id")
+}
+
+model product_to_collection {
+  id                          BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id                  BigInt             @db.UnsignedBigInt
+  collection_id               BigInt             @db.UnsignedBigInt
+  relationship_hash           String             @unique(map: "relationship_hash") @db.VarChar(40)
+  product_to_collection_order Int                @default(0) @db.UnsignedInt
+  pin_to_top                  Int                @default(0) @db.UnsignedSmallInt
+  createdAt                   BigInt             @db.UnsignedBigInt
+  product_collection          product_collection @relation(fields: [collection_id], references: [collection_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_collection_ibfk_1")
+  product                     product            @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_collection_ibfk_2")
+
+  @@index([collection_id], map: "collection_id")
+  @@index([product_id], map: "product_id")
+}
+
+model product_to_media {
+  id                BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id        BigInt  @db.UnsignedBigInt
+  media_id          BigInt  @db.UnsignedBigInt
+  relationship_hash String? @unique(map: "hash") @db.Char(40)
+  media_order       Int     @default(0) @db.UnsignedSmallInt
+  product           product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_media_ibfk_1")
+  media             media   @relation(fields: [media_id], references: [media_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_media_ibfk_2")
+
+  @@index([media_id], map: "media_id")
+  @@index([product_id], map: "product_id")
+}
+
+model banner {
+  banner_id          BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  media_id           BigInt? @db.UnsignedBigInt
+  banner_title       String  @db.VarChar(155)
+  banner_description String? @db.Text
+  banner_meta        Json?
+  banner_size        String  @default("medium") @db.Char(6)
+  banner_group       String  @db.VarChar(150)
+  banner_status      Int     @default(1) @db.UnsignedSmallInt
+  createdAt          BigInt  @db.UnsignedBigInt
+  createdBy          BigInt  @db.UnsignedBigInt
+  media              media?  @relation(fields: [media_id], references: [media_id], onUpdate: Restrict, map: "banner_ibfk_1")
+
+  @@index([media_id], map: "media_id")
+  @@index([banner_group], map: "banner_group")
+}
+
+model game {
+  id               BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  game_title       String  @db.VarChar(250)
+  game_excerpt     String? @db.VarChar(255)
+  game_description String? @db.Text
+  game_thumbnail   String? @db.VarChar(500)
+  game_slug        String  @unique(map: "game_slug") @db.VarChar(250)
+  game_setting     Json?
+  game_status      Int     @default(0) @db.UnsignedSmallInt
+  createdAt        BigInt  @db.UnsignedBigInt
+}
+
+model game_checkin_join {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @unique(map: "user_id") @db.UnsignedBigInt
+  count     Int    @default(0) @db.UnsignedInt
+  createdAt BigInt @db.UnsignedBigInt
+  user      user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "game_checkin_join_ibfk_1")
+}
+
+model game_checkin_log {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id   BigInt @db.UnsignedBigInt
+  createdAt BigInt @db.UnsignedBigInt
+  user      user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "game_checkin_log_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model game_lucky_wheel_present {
+  present_id            BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  present_name          String                  @db.VarChar(255)
+  present_name_short    String?                 @db.VarChar(50)
+  present_slug          String                  @unique(map: "present_slug") @db.VarChar(255)
+  present_thumbnail     BigInt?                 @db.UnsignedBigInt
+  present_type          String                  @default("normal") @db.VarChar(15)
+  voucher_id            BigInt?                 @db.UnsignedBigInt
+  wallet_number         Int?                    @default(0) @db.UnsignedMediumInt
+  wallet_id             BigInt?                 @db.UnsignedBigInt
+  wallet_code_id        BigInt?                 @db.UnsignedBigInt
+  reward_probability    Float                   @default(50) @db.Float
+  createdAt             BigInt                  @db.UnsignedBigInt
+  voucher               voucher?                @relation(fields: [voucher_id], references: [voucher_id], onDelete: Cascade, onUpdate: Restrict, map: "game_lucky_wheel_present_ibfk_1")
+  media                 media?                  @relation(fields: [present_thumbnail], references: [media_id], onUpdate: Restrict, map: "game_lucky_wheel_present_ibfk_2")
+  wallet_type           wallet_type?            @relation(fields: [wallet_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "game_lucky_wheel_present_ibfk_3")
+  wallet_code           wallet_code?            @relation(fields: [wallet_code_id], references: [wallet_code_id], onDelete: Cascade, onUpdate: Restrict, map: "game_lucky_wheel_present_ibfk_4")
+  game_lucky_wheel_rank game_lucky_wheel_rank[]
+
+  @@index([voucher_id], map: "voucher_id")
+  @@index([wallet_id], map: "wallet_id")
+  @@index([present_thumbnail], map: "present_thumbnail")
+  @@index([wallet_code_id], map: "wallet_code_id")
+}
+
+model game_lucky_wheel_rank {
+  id                       BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                  BigInt                   @db.UnsignedBigInt
+  present_id               BigInt                   @db.UnsignedBigInt
+  is_sent                  Int?                     @default(1) @db.UnsignedSmallInt
+  createdAt                BigInt                   @db.UnsignedBigInt
+  user                     user                     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "game_lucky_wheel_rank_ibfk_1")
+  game_lucky_wheel_present game_lucky_wheel_present @relation(fields: [present_id], references: [present_id], onDelete: Cascade, onUpdate: Restrict, map: "game_lucky_wheel_rank_ibfk_2")
+
+  @@index([present_id], map: "present_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_bank_information {
+  id                        BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                   BigInt  @unique(map: "user_id") @db.UnsignedBigInt
+  bank_name                 String  @db.VarChar(250)
+  bank_owner_display_name   String  @db.VarChar(250)
+  bank_owner_number_account String? @db.VarChar(50)
+  bank_owner_card_number    String? @db.VarChar(50)
+  createdAt                 BigInt  @db.UnsignedBigInt
+  user                      user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_bank_information_ibfk_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_verified {
+  id               BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id          BigInt  @unique(map: "user_id") @db.UnsignedBigInt
+  cccd_id          String? @unique(map: "cccd_id") @db.VarChar(12)
+  cccd_front_image String? @db.VarChar(255)
+  cccd_back_image  String? @db.VarChar(255)
+  user_face_image  String? @db.VarChar(255)
+  verified_status  Int     @default(0) @db.SmallInt
+  user_note        String? @db.VarChar(255)
+  createdAt        BigInt  @db.UnsignedBigInt
+  updatedAt        BigInt? @db.UnsignedBigInt
+  updatedBy        BigInt? @db.UnsignedBigInt
+  confirmer        user?   @relation("user_verified_updatedByTouser", fields: [updatedBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "confirmer")
+  user             user    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_verified_ibfk_1")
+
+  @@index([updatedBy], map: "confirmer")
+}
+
+model post_category {
+  category_id                 BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  category_name               String             @db.VarChar(150)
+  category_description        String?            @db.VarChar(1000)
+  category_slug               String             @unique(map: "category_slug") @db.VarChar(250)
+  category_thumbnail          BigInt?            @db.UnsignedBigInt
+  category_order              Int                @default(0) @db.UnsignedSmallInt
+  category_status             Int                @default(1) @db.UnsignedSmallInt
+  createdAt                   BigInt             @db.UnsignedBigInt
+  category_thumbnail_to_media media?             @relation(fields: [category_thumbnail], references: [media_id], onUpdate: Restrict, map: "category_thumbnail_to_media")
+  post_to_category            post_to_category[]
+
+  @@index([category_thumbnail], map: "category_thumbnail_to_media")
+}
+
+model post_to_category {
+  ID                BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  post_id           BigInt        @db.UnsignedBigInt
+  category_id       BigInt        @db.UnsignedBigInt
+  relationship_hash String?       @unique(map: "relationship_hash") @db.VarChar(40)
+  post_category     post_category @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: Restrict, map: "post_to_category_ibfk_1")
+  posts             posts         @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: Restrict, map: "post_to_category_ibfk_2")
+
+  @@index([category_id], map: "category_id")
+  @@index([post_id], map: "post_id")
+}
+
+model product_variant_group {
+  id                  BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id          BigInt  @db.UnsignedBigInt
+  variant_group_name  String  @db.VarChar(150)
+  variant_group_value String? @db.VarChar(1000)
+  hash                String  @unique(map: "hash") @db.VarChar(40)
+  createdAt           BigInt  @db.UnsignedBigInt
+  product             product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_group_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model product_variant {
+  variant_id                         BigInt                               @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id                         BigInt                               @db.UnsignedBigInt
+  variant_thumbnail                  BigInt?                              @db.UnsignedBigInt
+  variant_name                       String                               @db.VarChar(150)
+  variant_slug                       String                               @db.VarChar(150)
+  variant_excerpt                    String?                              @db.VarChar(250)
+  variant_sku                        String?                              @db.VarChar(50)
+  variant_barcode                    String?                              @unique(map: "variant_barcode") @db.VarChar(48)
+  variant_price                      Int                                  @default(0) @db.UnsignedInt
+  variant_original_price             Int?                                 @db.UnsignedInt
+  variant_status                     Int                                  @default(1) @db.UnsignedSmallInt
+  variant_has_commission             Int                                  @default(-1) @db.SmallInt
+  variant_has_rebate                 Int                                  @default(-1) @db.SmallInt
+  variant_has_tiered_rebate          Int                                  @default(-1) @db.SmallInt
+  hash                               String                               @unique(map: "hash") @db.VarChar(40)
+  createdAt                          BigInt                               @db.UnsignedBigInt
+  group_income_order                 group_income_order[]
+  order_product                      order_product[]
+  product                            product                              @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_ibfk_1")
+  variant_thumbnail_to_media         media?                               @relation(fields: [variant_thumbnail], references: [media_id], onUpdate: Restrict, map: "product_variant_ibfk_2")
+  product_variant_commission         product_variant_commission[]
+  product_variant_commission_advance product_variant_commission_advance[]
+  product_variant_group_income       product_variant_group_income?
+  product_variant_meta               product_variant_meta?
+  product_variant_rebate             product_variant_rebate[]
+  product_variant_tiered_rebate      product_variant_tiered_rebate[]
+  product_wishlist                   product_wishlist[]
+  review                             review[]
+  shopping_cart_item                 shopping_cart_item[]
+
+  @@index([product_id], map: "product_id")
+  @@index([variant_slug], map: "variant_slug")
+  @@index([variant_thumbnail], map: "variant_thumbnail")
+  @@index([variant_sku], map: "variant_sku")
+}
+
+model shopping_cart {
+  id                 BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id            BigInt               @unique(map: "user_id") @db.UnsignedBigInt
+  total_value        Int                  @default(0) @db.UnsignedInt
+  total_quantity     Int                  @default(0) @db.UnsignedSmallInt
+  lastUpdated        BigInt?              @db.UnsignedBigInt
+  createdAt          BigInt               @db.UnsignedBigInt
+  user               user                 @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "shopping_cart_ibfk_1")
+  shopping_cart_item shopping_cart_item[]
+}
+
+model shopping_cart_item {
+  id                  BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  shopping_cart_id    BigInt           @db.UnsignedBigInt
+  product_id          BigInt           @db.UnsignedBigInt
+  variant_id          BigInt?          @db.UnsignedBigInt
+  cart_quantity       Int              @default(0) @db.UnsignedSmallInt
+  cart_price          Int              @default(0) @db.UnsignedInt
+  cart_original_price Int              @default(0) @db.UnsignedInt
+  hash                String           @unique(map: "hash") @db.Char(40)
+  createdAt           BigInt           @db.UnsignedBigInt
+  shopping_cart       shopping_cart    @relation(fields: [shopping_cart_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "shopping_cart_item_ibfk_1")
+  product             product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "shopping_cart_item_ibfk_2")
+  product_variant     product_variant? @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "shopping_cart_item_ibfk_3")
+
+  @@index([product_id], map: "product_id")
+  @@index([shopping_cart_id], map: "shopping_cart_id")
+  @@index([variant_id], map: "variant_id")
+}
+
+model banner_tag {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  tag_name  String @db.VarChar(150)
+  tag_slug  String @unique(map: "tag_slug") @db.VarChar(150)
+  createdAt BigInt @db.UnsignedBigInt
+}
+
+model product_wishlist {
+  wishlist_id     BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt           @db.UnsignedBigInt
+  product_id      BigInt           @db.UnsignedBigInt
+  variant_id      BigInt?          @db.UnsignedBigInt
+  hash            String           @unique(map: "hash") @db.VarChar(40)
+  createdAt       BigInt           @db.UnsignedBigInt
+  product         product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_wishlist_ibfk_1")
+  product_variant product_variant? @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_wishlist_ibfk_2")
+  user            user             @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "product_wishlist_ibfk_3")
+
+  @@index([product_id], map: "product_id")
+  @@index([user_id], map: "user_id")
+  @@index([variant_id], map: "variant_id")
+}
+
+model product_brand {
+  brand_id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  brand_name             String             @db.VarChar(150)
+  brand_slug             String?            @unique(map: "brand_slug") @db.VarChar(150)
+  brand_excerpt          String?            @db.VarChar(255)
+  brand_description      String?            @db.Text
+  brand_thumbnail        BigInt?            @db.UnsignedBigInt
+  brand_order            Int                @default(1) @db.MediumInt
+  createdAt              BigInt             @db.UnsignedBigInt
+  product_brand_to_media media?             @relation(fields: [brand_thumbnail], references: [media_id], onUpdate: Restrict, map: "product_brand_ibfk_1")
+  product_to_brand       product_to_brand[]
+
+  @@index([brand_thumbnail], map: "brand_thumbnail")
+}
+
+model product_to_brand {
+  id                     BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  brand_id               BigInt        @db.UnsignedBigInt
+  product_id             BigInt        @unique(map: "product_id") @db.UnsignedBigInt
+  product_to_brand_order Int           @default(0) @db.UnsignedInt
+  pin_to_top             Int           @default(0) @db.UnsignedSmallInt
+  relationship_hash      String?       @unique(map: "relationship_hash") @db.VarChar(40)
+  createdAt              BigInt        @db.UnsignedBigInt
+  product                product       @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_brand_ibfk_1")
+  product_brand          product_brand @relation(fields: [brand_id], references: [brand_id], onDelete: Cascade, onUpdate: Restrict, map: "product_to_brand_ibfk_2")
+
+  @@index([brand_id], map: "brand_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model order_transport_log {
+  transport_id      BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id          BigInt  @db.UnsignedBigInt
+  transport_title   String? @db.VarChar(150)
+  transport_content String? @db.VarChar(500)
+  transport_status  String  @default("prepairing") @db.VarChar(20)
+  createdAt         BigInt  @db.UnsignedBigInt
+  orders            orders  @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_transport_log_ibfk_1")
+
+  @@index([order_id], map: "order_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_address_book {
+  user_address_book_id  BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id               BigInt? @db.UnsignedBigInt
+  user_fullname         String? @db.VarChar(150)
+  user_phonenumber      String? @db.VarChar(20)
+  user_address          String? @db.VarChar(150)
+  user_address_city     String? @db.VarChar(10)
+  user_address_district String? @db.VarChar(10)
+  user_address_ward     String? @db.VarChar(10)
+  user_address_type     String? @db.VarChar(10)
+  is_default            Int     @default(0) @db.UnsignedSmallInt
+  user_address_fulltext String? @db.VarChar(500)
+  createdAt             BigInt  @db.UnsignedBigInt
+  user                  user?   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_address_book_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model geographic_districts {
+  id             BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  code           String @db.VarChar(10)
+  name           String @db.VarChar(255)
+  slug           String @db.VarChar(255)
+  type           String @db.VarChar(50)
+  name_with_type String @db.VarChar(255)
+  path           String @db.VarChar(255)
+  path_with_type String @db.VarChar(255)
+  parent_code    String @db.VarChar(15)
+
+  @@index([code], map: "code")
+  @@index([parent_code], map: "parent_code")
+}
+
+model geographic_provinces {
+  id             BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  code           String @db.VarChar(10)
+  name           String @db.VarChar(255)
+  slug           String @db.VarChar(255)
+  type           String @db.VarChar(50)
+  name_with_type String @db.VarChar(255)
+  longitude      String @db.VarChar(150)
+  latitude       String @db.VarChar(150)
+
+  @@index([code], map: "code")
+}
+
+model geographic_wards {
+  id             BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  code           String @db.VarChar(10)
+  name           String @db.VarChar(255)
+  slug           String @db.VarChar(255)
+  type           String @db.VarChar(50)
+  name_with_type String @db.VarChar(255)
+  path           String @db.VarChar(255)
+  path_with_type String @db.VarChar(255)
+  parent_code    String @db.VarChar(15)
+
+  @@index([code], map: "code")
+  @@index([parent_code], map: "parent_code")
+}
+
+model order_fulfillment {
+  order_fulfillment_id              BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id                          BigInt            @unique(map: "order_id") @db.UnsignedBigInt
+  logistic_id                       BigInt?           @db.UnsignedBigInt
+  receiver_fullname                 String?           @db.VarChar(150)
+  receiver_phonenumber              String?           @db.VarChar(20)
+  receiver_address                  String?           @db.VarChar(150)
+  receiver_address_ward             String?           @db.Char(10)
+  receiver_address_district         String?           @db.Char(10)
+  receiver_address_city             String?           @db.Char(10)
+  receiver_address_fulltext         String?           @db.VarChar(255)
+  order_fulfillment_private_status  Int               @default(0) @db.UnsignedInt
+  order_fulfillment_code            String?           @db.VarChar(200)
+  order_fulfillment_error           String?           @db.VarChar(500)
+  order_fulfillment_packingslip_uri String?           @db.VarChar(255)
+  order_estimated_dateofdelivery    BigInt?           @db.UnsignedBigInt
+  createdAt                         BigInt            @db.UnsignedBigInt
+  updatedAt                         BigInt?           @db.UnsignedBigInt
+  orders                            orders            @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_fulfillment_ibfk_1")
+  logistic_service                  logistic_service? @relation(fields: [logistic_id], references: [logistic_id], onDelete: Cascade, onUpdate: Restrict, map: "order_fulfillment_ibfk_2")
+
+  @@index([order_fulfillment_code], map: "order_fullfillment_code")
+  @@index([logistic_id], map: "order_fullfillment_service")
+}
+
+model order_to_stock {
+  order_to_stock_id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id          BigInt @unique(map: "order_id") @db.UnsignedBigInt
+  stock_id          BigInt @db.UnsignedBigInt
+  orders            orders @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_to_stock_ibfk_1")
+  stock             stock  @relation(fields: [stock_id], references: [stock_id], onDelete: Cascade, onUpdate: Restrict, map: "order_to_stock_ibfk_2")
+
+  @@index([stock_id], map: "stock_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product_commission {
+  commission_id     BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id        BigInt  @db.UnsignedBigInt
+  commission_level  Int     @db.UnsignedInt
+  commission_value  Int     @db.UnsignedInt
+  commission_method String  @default("percent") @db.VarChar(15)
+  product           product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_commission_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model product_rebate {
+  rebate_id                 BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id                BigInt  @db.UnsignedBigInt
+  rebate_value              Int     @db.UnsignedInt
+  rebate_method             String  @default("percent") @db.VarChar(15)
+  user_role                 String  @db.VarChar(15)
+  product_rebate_to_product product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_rebate_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model user_group {
+  user_group_id                 BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  user_group_thumbnail          BigInt?         @db.UnsignedBigInt
+  user_group_name               String          @db.VarChar(255)
+  user_group_slug               String          @unique(map: "user_group_slug") @db.VarChar(255)
+  user_group_description        String?         @db.Text
+  user_group_status             Int             @default(1) @db.UnsignedSmallInt
+  user_group_leader             BigInt?         @db.UnsignedBigInt
+  createdAt                     BigInt          @db.UnsignedBigInt
+  user_group_thumbnail_to_media media?          @relation(fields: [user_group_thumbnail], references: [media_id], onUpdate: Restrict, map: "user_group_ibfk_1")
+  user_group_leader_to_user     user?           @relation(fields: [user_group_leader], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_group_ibfk_2")
+  user_to_group                 user_to_group[]
+
+  @@index([user_group_thumbnail], map: "user_group_thumbnail")
+  @@index([user_group_leader], map: "leader")
+}
+
+model user_to_group {
+  id              BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt     @db.UnsignedBigInt
+  user_group_id   BigInt     @db.UnsignedBigInt
+  hash            String     @unique(map: "hash") @db.VarChar(40)
+  createdAt       BigInt     @db.UnsignedBigInt
+  user_data       user       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_group_ibfk_1")
+  user_group_data user_group @relation(fields: [user_group_id], references: [user_group_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_group_ibfk_2")
+
+  @@index([user_group_id], map: "user_group_id")
+  @@index([user_id], map: "user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product_tiered_rebate {
+  tiered_rebate_id BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id       BigInt  @db.UnsignedBigInt
+  rebate_value     Int     @db.UnsignedInt
+  rebate_method    String  @default("percent") @db.VarChar(15)
+  user_role        String  @default("customer") @db.VarChar(15)
+  product          product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_tiered_rebate_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model product_variant_commission {
+  variant_commission_id BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  product_variant_id    BigInt          @db.UnsignedBigInt
+  commission_level      Int             @db.UnsignedInt
+  commission_value      Int             @db.UnsignedInt
+  commission_method     String          @db.VarChar(15)
+  product_variant       product_variant @relation(fields: [product_variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_commission_ibfk_1")
+
+  @@index([product_variant_id], map: "product_variant_id")
+}
+
+model product_variant_rebate {
+  variant_rebate_id  BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  product_variant_id BigInt          @db.UnsignedBigInt
+  rebate_value       Int             @db.UnsignedInt
+  rebate_method      String          @db.VarChar(15)
+  user_role          String          @db.VarChar(25)
+  product_variant    product_variant @relation(fields: [product_variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_rebate_ibfk_1")
+
+  @@index([product_variant_id], map: "product_variant_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product_variant_tiered_rebate {
+  variant_tiered_rebate_id BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  product_variant_id       BigInt          @db.UnsignedBigInt
+  rebate_value             Int             @db.UnsignedInt
+  rebate_method            String          @db.VarChar(15)
+  user_role                String          @default("customer") @db.VarChar(15)
+  product_variant          product_variant @relation(fields: [product_variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_tiered_rebate_ibfk_1")
+
+  @@index([product_variant_id], map: "product_variant_id")
+}
+
+model order_log {
+  log_id      BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id    BigInt  @db.UnsignedBigInt
+  log_title   String  @db.VarChar(255)
+  log_content String? @db.VarChar(2000)
+  createdAt   BigInt  @db.UnsignedBigInt
+  orders      orders  @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_log_ibfk_1")
+
+  @@index([order_id], map: "order_id")
+}
+
+model notification_to_user {
+  id                 BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  notification_count Int    @default(0) @db.UnsignedInt
+  notification_read  Int    @default(0) @db.UnsignedInt
+  user_id            BigInt @unique(map: "user_id") @db.UnsignedBigInt
+  user               user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "notification_to_user_ibfk_1")
+}
+
+model order_bounty {
+  id                 BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id           BigInt  @db.UnsignedBigInt
+  product_id         BigInt  @db.UnsignedBigInt
+  product_variant_id BigInt? @db.UnsignedBigInt
+  receiver_id        BigInt  @db.UnsignedBigInt
+  bounty_value       Int     @db.UnsignedInt
+  bounty_explane     String? @db.VarChar(255)
+  bounty_type        String  @default("commission") @db.VarChar(20)
+  wallet_id          BigInt  @db.UnsignedBigInt
+  is_payout          Int     @default(0) @db.UnsignedSmallInt
+  createdAt          BigInt  @db.UnsignedBigInt
+  orders             orders  @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_bounty_ibfk_1")
+  receiver_data      user    @relation(fields: [receiver_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "order_bounty_ibfk_2")
+  wallet             wallet  @relation(fields: [wallet_id], references: [wallet_id], onDelete: Cascade, onUpdate: Restrict, map: "order_bounty_ibfk_3")
+
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
+  @@index([product_variant_id], map: "product_variant_id")
+  @@index([receiver_id], map: "receiver_id")
+  @@index([wallet_id], map: "wallet_id")
+}
+
+model product_commission_advance {
+  id                      BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id              BigInt  @db.UnsignedBigInt
+  commission_parent_index Int     @db.UnsignedSmallInt
+  user_role               String  @db.VarChar(20)
+  commission_value        Int     @db.UnsignedInt
+  product                 product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_commission_advance_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model product_variant_commission_advance {
+  id                      BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  variant_id              BigInt          @db.UnsignedBigInt
+  commission_parent_index Int             @db.UnsignedSmallInt
+  user_role               String          @db.VarChar(20)
+  commission_value        Int             @db.UnsignedInt
+  product_variant         product_variant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_commission_advance_ibfk_1")
+
+  @@index([variant_id], map: "variant_id")
+}
+
+model voucher {
+  voucher_id                 BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  voucher_name               String                     @db.VarChar(150)
+  voucher_excerpt            String?                    @db.VarChar(255)
+  voucher_description        String                     @db.Text
+  voucher_code               String                     @unique(map: "voucher_code") @db.VarChar(150)
+  voucher_valid_from         BigInt                     @db.UnsignedBigInt
+  voucher_valid_to           BigInt                     @db.UnsignedBigInt
+  voucher_count              Int                        @default(0) @db.UnsignedInt
+  voucher_count_max          Int                        @db.UnsignedInt
+  voucher_count_max_per_user Int                        @default(0) @db.UnsignedMediumInt
+  voucher_thumbnail          BigInt?                    @db.UnsignedBigInt
+  voucher_category           String                     @default("shipping") @db.VarChar(10)
+  voucher_value              Int                        @default(1) @db.UnsignedInt
+  voucher_value_max          Int?
+  voucher_value_unit         String                     @default("percent") @db.VarChar(15)
+  voucher_action             String?                    @db.VarChar(1000)
+  is_multiple                Int                        @default(0) @db.UnsignedSmallInt
+  is_private                 Int                        @default(0) @db.UnsignedSmallInt
+  is_active                  Int                        @default(1) @db.UnsignedSmallInt
+  is_transferable            Int                        @default(0) @db.UnsignedSmallInt
+  is_cloned                  Int                        @default(0) @db.UnsignedSmallInt
+  createdAt                  BigInt                     @db.UnsignedBigInt
+  game_lucky_wheel_present   game_lucky_wheel_present[]
+  gift                       gift[]
+  order_to_voucher           order_to_voucher[]
+  voucher_thumbnail_to_media media?                     @relation(fields: [voucher_thumbnail], references: [media_id], onUpdate: Restrict, map: "voucher_ibfk_1")
+  voucher_rule               voucher_rule[]
+
+  @@index([voucher_thumbnail], map: "voucher_thumnail")
+  @@index([voucher_category], map: "voucher_category")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model default_product_commission {
+  commission_id     BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  commission_level  Int    @db.UnsignedInt
+  commission_value  Int    @db.UnsignedInt
+  commission_method String @default("percent") @db.VarChar(15)
+}
+
+model default_product_commission_advance {
+  id                      BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  commission_parent_index Int    @db.UnsignedSmallInt
+  user_role               String @db.VarChar(20)
+  commission_value        Int    @db.UnsignedInt
+}
+
+model default_product_rebate {
+  rebate_id     BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  rebate_value  Int    @db.UnsignedInt
+  rebate_method String @default("percent") @db.VarChar(15)
+  user_role     String @db.VarChar(15)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model default_product_tiered_rebate {
+  tiered_rebate_id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  rebate_value     Int    @db.UnsignedInt
+  rebate_method    String @default("percent") @db.VarChar(15)
+  user_role        String @default("customer") @db.VarChar(15)
+}
+
+model voucher_rule {
+  id                 BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  voucher_id         BigInt  @db.UnsignedBigInt
+  voucher_rule_key   String  @db.VarChar(100)
+  voucher_rule_value String? @db.VarChar(1000)
+  createdAt          BigInt  @db.UnsignedBigInt
+  voucher            voucher @relation(fields: [voucher_id], references: [voucher_id], onDelete: Cascade, onUpdate: Restrict, map: "voucher_rule_ibfk_1")
+
+  @@index([voucher_id], map: "voucher_id")
+}
+
+model vouncher_to_user {
+  id         BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  voucher_id BigInt @db.UnsignedBigInt
+  user_id    BigInt @db.UnsignedBigInt
+  createdAt  BigInt @db.UnsignedBigInt
+  user       user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "vouncher_to_user_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+  @@index([voucher_id], map: "voucher_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model order_to_voucher {
+  id                       BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id                 BigInt  @db.UnsignedBigInt
+  voucher_id               BigInt  @db.UnsignedBigInt
+  voucher_name             String  @db.VarChar(150)
+  voucher_code             String  @db.VarChar(150)
+  voucher_value            Int     @db.UnsignedInt
+  voucher_value_unit       String  @default("percent") @db.VarChar(15)
+  voucher_value_max        Int     @db.UnsignedInt
+  voucher_category         String  @default("shipping") @db.VarChar(15)
+  voucher_after_calculator Int?
+  orders                   orders  @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "order_to_voucher_ibfk_1")
+  voucher                  voucher @relation(fields: [voucher_id], references: [voucher_id], onDelete: Cascade, onUpdate: Restrict, map: "order_to_voucher_ibfk_2")
+
+  @@index([order_id], map: "order_id")
+  @@index([voucher_id], map: "voucher_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model withdrawal_request {
+  id                            BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id                       BigInt  @db.UnsignedBigInt
+  amount                        Int     @db.UnsignedInt
+  wallet_unit                   String  @db.VarChar(20)
+  request_note                  String? @db.VarChar(1000)
+  request_status                Int     @default(0) @db.SmallInt
+  user_bank_information_history String? @db.VarChar(1000)
+  createdAt                     BigInt  @db.UnsignedBigInt
+  updatedAt                     BigInt? @db.UnsignedBigInt
+  updatedBy                     BigInt? @db.UnsignedBigInt
+  request_to_user               user    @relation("withdrawal_request_user_idTouser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "withdrawal_request_ibfk_1")
+  update_to_user                user?   @relation("withdrawal_request_updatedByTouser", fields: [updatedBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "withdrawal_request_ibfk_2")
+
+  @@index([updatedBy], map: "updatedBy")
+  @@index([user_id], map: "user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model review {
+  review_id          BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id         BigInt           @db.UnsignedBigInt
+  variant_id         BigInt?          @db.UnsignedBigInt
+  order_id           BigInt?          @db.UnsignedBigInt
+  user_id            BigInt           @db.UnsignedBigInt
+  hash               String           @unique(map: "hash") @db.VarChar(35)
+  review_meta_status Int              @default(0) @db.UnsignedSmallInt
+  createdAt          BigInt           @db.UnsignedBigInt
+  updatedAt          BigInt?          @db.UnsignedBigInt
+  product            product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_1")
+  orders             orders?          @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_2")
+  user               user             @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_3")
+  product_variant    product_variant? @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_4")
+  review_meta        review_meta?
+
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
+  @@index([user_id], map: "user_id")
+  @@index([variant_id], map: "variant_id")
+}
+
+model review_meta {
+  review_meta_id BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  review_id      BigInt         @unique(map: "review_id_2") @db.UnsignedBigInt
+  review_title   String?        @db.VarChar(255)
+  review_content String?        @db.Text
+  review_point   Float          @default(3) @db.Float
+  review_status  Int            @default(1) @db.SmallInt
+  createdAt      BigInt         @db.UnsignedBigInt
+  review_media   review_media[]
+  review         review         @relation(fields: [review_id], references: [review_id], onDelete: Cascade, onUpdate: Restrict, map: "review_meta_ibfk_1")
+
+  @@index([review_id], map: "review_id")
+}
+
+model product_meta {
+  product_meta_id       BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id            BigInt  @unique(map: "product_id") @db.UnsignedBigInt
+  product_review_count  Int     @default(0) @db.UnsignedInt
+  product_review_point  Float   @default(5) @db.Float
+  product_sold_quantity Int     @default(0)
+  product_data          product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_meta_ibfk_1")
+}
+
+model review_media {
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  review_meta_id  BigInt      @db.UnsignedBigInt
+  media_id        BigInt      @db.UnsignedBigInt
+  review_to_media media       @relation(fields: [media_id], references: [media_id], onDelete: Cascade, onUpdate: Restrict, map: "review_media_ibfk_1")
+  review_meta     review_meta @relation(fields: [review_meta_id], references: [review_meta_id], onDelete: Cascade, onUpdate: Restrict, map: "review_media_ibfk_2")
+
+  @@index([media_id], map: "media_id")
+  @@index([review_meta_id], map: "review_meta_id")
+}
+
+model product_variant_meta {
+  id                            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  variant_id                    BigInt          @unique(map: "variant_id_2") @db.UnsignedBigInt
+  product_variant_review_count  Int             @default(0)
+  product_variant_review_point  Int             @default(5)
+  product_variant_sold_quantity Int             @default(0)
+  product_variant               product_variant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_meta_ibfk_1")
+
+  @@index([variant_id], map: "variant_id")
+}
+
+model social_post {
+  social_post_id            BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  social_post_content       String                @db.Text
+  social_category           String                @default("all") @db.VarChar(50)
+  social_suggest_product_id BigInt?               @db.UnsignedBigInt
+  createdAt                 BigInt                @db.UnsignedBigInt
+  createdBy                 BigInt                @db.UnsignedBigInt
+  user                      user                  @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_ibfk_1")
+  product                   product?              @relation(fields: [social_suggest_product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_ibfk_2")
+  social_post_comment       social_post_comment[]
+  social_post_like          social_post_like[]
+  social_post_media         social_post_media[]
+
+  @@index([createdBy], map: "createdBy")
+  @@index([social_category], map: "social_category")
+  @@index([social_suggest_product_id], map: "social_suggest_product_id")
+}
+
+model social_post_like {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  social_post_id BigInt      @db.UnsignedBigInt
+  user_id        BigInt      @db.UnsignedBigInt
+  hash           String      @unique(map: "hash") @db.VarChar(40)
+  social_post    social_post @relation(fields: [social_post_id], references: [social_post_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_like_ibfk_1")
+  user           user        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_like_ibfk_2")
+
+  @@index([social_post_id], map: "social_post_id")
+  @@index([user_id], map: "user_id")
+}
+
+model social_post_media {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  social_post_id BigInt      @db.UnsignedBigInt
+  media_id       BigInt      @db.UnsignedBigInt
+  media          media       @relation(fields: [media_id], references: [media_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_media_ibfk_1")
+  social_post    social_post @relation(fields: [social_post_id], references: [social_post_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_media_ibfk_2")
+
+  @@index([media_id], map: "media_id")
+  @@index([social_post_id], map: "social_post_media")
+}
+
+model social_post_comment {
+  comment_id      BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  social_post_id  BigInt      @db.UnsignedBigInt
+  comment_content String      @db.VarChar(1000)
+  comment_parent  BigInt?     @db.UnsignedBigInt
+  hash            String      @unique(map: "hash") @db.VarChar(40)
+  createdAt       BigInt      @db.UnsignedBigInt
+  createdBy       BigInt      @db.UnsignedBigInt
+  user            user        @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_comment_ibfk_1")
+  social_post     social_post @relation(fields: [social_post_id], references: [social_post_id], onDelete: Cascade, onUpdate: Restrict, map: "social_post_comment_ibfk_2")
+
+  @@index([comment_parent], map: "comment_parent")
+  @@index([createdBy], map: "createdBy")
+  @@index([social_post_id], map: "social_post_id")
+}
+
+model referrer_device {
+  id              BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  device_uuid     String  @unique(map: "device_uuid") @db.VarChar(165)
+  app_device_uuid String? @db.VarChar(165)
+  param           String? @db.VarChar(1000)
+  createdAt       BigInt  @db.UnsignedBigInt
+
+  @@index([app_device_uuid], map: "app_device_uuid")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model redeem_request {
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id         BigInt      @db.UnsignedBigInt
+  gift_id         BigInt      @db.UnsignedBigInt
+  gift_value      Int         @db.UnsignedInt
+  wallet_type_id  BigInt      @db.UnsignedBigInt
+  request_note    String?     @db.VarChar(1000)
+  request_status  Int         @default(0) @db.SmallInt
+  createdAt       BigInt      @db.UnsignedBigInt
+  updatedAt       BigInt?     @db.UnsignedBigInt
+  updatedBy       BigInt?     @db.UnsignedBigInt
+  request_sender  user        @relation("redeem_request_user_idTouser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "redeem_request_ibfk_1")
+  request_updater user?       @relation("redeem_request_updatedByTouser", fields: [updatedBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "redeem_request_ibfk_2")
+  wallet_type     wallet_type @relation(fields: [wallet_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "redeem_request_ibfk_3")
+  gift            gift        @relation(fields: [gift_id], references: [gift_id], onDelete: Cascade, onUpdate: Restrict, map: "redeem_request_ibfk_4")
+
+  @@index([updatedBy], map: "updatedBy")
+  @@index([user_id], map: "user_id")
+  @@index([wallet_type_id], map: "wallet_type_id")
+  @@index([gift_id], map: "redeem_id")
+}
+
+model webhook_outgoing {
+  webhook_id              BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  webhook_title           String                    @db.VarChar(250)
+  webhook_description     String?                   @db.VarChar(250)
+  webhook_url             String                    @db.VarChar(300)
+  webhook_active          Int                       @default(0) @db.UnsignedInt
+  webhook_method          String                    @default("post") @db.VarChar(10)
+  createdAt               BigInt                    @db.UnsignedBigInt
+  createdBy               BigInt                    @db.UnsignedBigInt
+  updatedAt               BigInt?                   @db.UnsignedBigInt
+  lastOpen                BigInt?                   @db.UnsignedBigInt
+  successOpen             Int?                      @default(0) @db.UnsignedInt
+  failOpen                Int?                      @default(0) @db.UnsignedInt
+  webhook_outgoing_action webhook_outgoing_action[]
+  webhook_outgoing_log    webhook_outgoing_log[]
+
+  @@index([createdBy], map: "createdBy")
+}
+
+model webhook_outgoing_action {
+  action_id           BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  webhook_outgoing_id BigInt           @db.UnsignedBigInt
+  action_key          String           @db.VarChar(50)
+  createdAt           BigInt           @db.UnsignedBigInt
+  webhook_outgoing    webhook_outgoing @relation(fields: [webhook_outgoing_id], references: [webhook_id], onDelete: Cascade, onUpdate: NoAction, map: "webhook_outgoing_action_ibfk_1")
+
+  @@index([action_key], map: "action_key")
+  @@index([webhook_outgoing_id], map: "outgoing_webhook_id")
+}
+
+model webhook_outgoing_log {
+  log_id              BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  webhook_outgoing_id BigInt           @db.UnsignedBigInt
+  log_method          String           @default("GET") @db.VarChar(10)
+  log_data            String?          @db.VarChar(2500)
+  createdAt           BigInt           @db.UnsignedBigInt
+  webhook_outgoing    webhook_outgoing @relation(fields: [webhook_outgoing_id], references: [webhook_id], onDelete: Cascade, onUpdate: NoAction, map: "webhook_outgoing_log_ibfk_1")
+
+  @@index([webhook_outgoing_id], map: "outgoing_webhook_id")
+}
+
+model gift {
+  gift_id                 BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  gift_title              String           @db.VarChar(500)
+  gift_description        String?          @db.VarChar(255)
+  gift_content            String           @db.Text
+  gift_slug               String           @unique(map: "redeem_slug") @db.VarChar(255)
+  gift_thumbnail          BigInt?          @db.UnsignedBigInt
+  gift_status             Int              @default(1) @db.UnsignedSmallInt
+  gift_value              Int              @default(0) @db.UnsignedInt
+  gift_quantity           Int              @default(1) @db.UnsignedInt
+  wallet_type_id          BigInt           @db.UnsignedBigInt
+  voucher_id              BigInt?          @db.UnsignedBigInt
+  wallet_code_id          BigInt?          @db.UnsignedBigInt
+  createdAt               BigInt           @db.UnsignedBigInt
+  createdBy               BigInt           @db.UnsignedBigInt
+  gift_thumbnail_to_media media?           @relation(fields: [gift_thumbnail], references: [media_id], onDelete: Cascade, onUpdate: Restrict, map: "gift_ibfk_1")
+  user                    user             @relation(fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "gift_ibfk_2")
+  wallet_type             wallet_type      @relation(fields: [wallet_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "gift_ibfk_3")
+  voucher                 voucher?         @relation(fields: [voucher_id], references: [voucher_id], onDelete: Cascade, onUpdate: Restrict, map: "gift_ibfk_4")
+  wallet_code             wallet_code?     @relation(fields: [wallet_code_id], references: [wallet_code_id], onDelete: Cascade, onUpdate: Restrict, map: "gift_ibfk_5")
+  redeem_request          redeem_request[]
+
+  @@index([createdBy], map: "createdBy")
+  @@index([gift_thumbnail], map: "redeem_thumbnail")
+  @@index([voucher_id], map: "voucher_id")
+  @@index([wallet_type_id], map: "wallet_id")
+  @@index([wallet_code_id], map: "wallet_code_id")
+}
+
+model wallet_code {
+  wallet_code_id           BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  wallet_code_name         String                     @db.VarChar(255)
+  redeem_code              String                     @unique(map: "redeem_code") @db.Char(40)
+  wallet_code_value        Int                        @db.UnsignedInt
+  wallet_type_id           BigInt                     @db.UnsignedBigInt
+  wallet_code_valid_to     BigInt                     @db.UnsignedBigInt
+  is_cloned                Int                        @default(0) @db.UnsignedSmallInt
+  is_used                  Int                        @default(0) @db.UnsignedSmallInt
+  used_by                  BigInt?                    @db.UnsignedBigInt
+  createdAt                BigInt                     @db.UnsignedBigInt
+  usedAt                   BigInt?                    @db.UnsignedBigInt
+  createdBy                BigInt                     @db.UnsignedBigInt
+  game_lucky_wheel_present game_lucky_wheel_present[]
+  gift                     gift[]
+  wallet_type              wallet_type                @relation(fields: [wallet_type_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_ibfk_1")
+  used_by_to_user          user?                      @relation("wallet_code_used_byTouser", fields: [used_by], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_ibfk_2")
+  createdBy_to_user        user                       @relation("wallet_code_createdByTouser", fields: [createdBy], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_ibfk_3")
+  wallet_code_meta         wallet_code_meta[]
+  wallet_code_to_user      wallet_code_to_user?
+
+  @@index([createdBy], map: "createdBy")
+  @@index([used_by], map: "used_by")
+  @@index([wallet_type_id], map: "wallet_type_id")
+}
+
+model wallet_code_meta {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  wallet_code_id BigInt      @db.UnsignedBigInt
+  meta_key       String      @db.VarChar(50)
+  meta_value     String?     @db.VarChar(255)
+  wallet_code    wallet_code @relation(fields: [wallet_code_id], references: [wallet_code_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_meta_ibfk_1")
+
+  @@index([meta_key], map: "meta_key")
+  @@index([wallet_code_id], map: "wallet_code_id")
+}
+
+model wallet_code_to_user {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id        BigInt      @db.UnsignedBigInt
+  wallet_code_id BigInt      @unique(map: "wallet_code_id") @db.UnsignedBigInt
+  user           user        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_to_user_ibfk_1")
+  wallet_code    wallet_code @relation(fields: [wallet_code_id], references: [wallet_code_id], onDelete: Cascade, onUpdate: Restrict, map: "wallet_code_to_user_ibfk_2")
+
+  @@index([user_id], map: "user_id")
+}
+
+model rank {
+  rank_id                         BigInt                            @id @default(autoincrement()) @db.UnsignedBigInt
+  rank_name                       String                            @db.VarChar(255)
+  rank_slug                       String                            @unique(map: "rank_slug") @db.VarChar(255)
+  rank_description                String                            @db.VarChar(1000)
+  min_points                      Int                               @db.UnsignedInt
+  timeframe                       String                            @default("daily") @db.VarChar(150)
+  createdAt                       BigInt                            @db.UnsignedBigInt
+  default_product_commission_rank default_product_commission_rank[]
+  default_product_rebate_rank     default_product_rebate_rank[]
+  user_to_rank                    user_to_rank[]
+}
+
+model user_point {
+  id            BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id       BigInt @db.UnsignedBigInt
+  activity_name String @db.VarChar(255)
+  points        Int
+  createdAt     BigInt
+  user          user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_point_ibfk_1")
+
+  @@index([activity_name], map: "activity_type_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_to_rank {
+  user_id     BigInt @id @unique(map: "user_id") @db.UnsignedBigInt
+  rank_id     BigInt @db.UnsignedBigInt
+  createdAt   BigInt @db.UnsignedBigInt
+  lastUpdated BigInt @db.UnsignedBigInt
+  user        user   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_rank_ibfk_1")
+  rank        rank   @relation(fields: [rank_id], references: [rank_id], onDelete: Cascade, onUpdate: Restrict, map: "user_to_rank_ibfk_2")
+
+  @@index([rank_id], map: "rank_id")
+}
+
+model contactform_media {
+  id             BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  contactform_id BigInt      @db.UnsignedBigInt
+  media_id       BigInt      @db.UnsignedBigInt
+  contactform    contactform @relation(fields: [contactform_id], references: [contactform_id], onDelete: Cascade, onUpdate: Restrict, map: "contactform_media_ibfk_1")
+  media          media       @relation(fields: [media_id], references: [media_id], onDelete: Cascade, onUpdate: Restrict, map: "contactform_media_ibfk_2")
+
+  @@index([contactform_id], map: "contactform_id")
+  @@index([media_id], map: "media_id")
+}
+
+model default_product_commission_rank {
+  id                      BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  commission_parent_index Int    @db.UnsignedMediumInt
+  user_rank               BigInt @db.UnsignedBigInt
+  commission_value        Float
+  rank                    rank   @relation(fields: [user_rank], references: [rank_id], onDelete: Cascade, onUpdate: Restrict, map: "default_product_commission_rank_ibfk_1")
+
+  @@index([user_rank], map: "user_rank")
+}
+
+model default_product_rebate_rank {
+  id            BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  rebate_value  Int
+  rebate_method String @default("percent") @db.VarChar(15)
+  user_rank     BigInt @db.UnsignedBigInt
+  rank          rank   @relation(fields: [user_rank], references: [rank_id], onDelete: Cascade, onUpdate: Restrict, map: "default_product_rebate_rank_ibfk_1")
+
+  @@index([user_rank], map: "user_rank")
+}
+
+model user_role {
+  id                     BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  user_role              String               @unique(map: "user_role_2") @default("user") @db.VarChar(50)
+  user_role_type         String               @default("staff") @db.VarChar(15)
+  user_capacity_group_id BigInt?              @db.UnsignedBigInt
+  user_role_order        Int                  @default(0) @db.UnsignedMediumInt
+  is_default             Int                  @default(0) @db.UnsignedSmallInt
+  is_readonly            Int                  @default(0) @db.UnsignedSmallInt
+  createdAt              BigInt               @db.UnsignedBigInt
+  user_capacity_group    user_capacity_group? @relation(fields: [user_capacity_group_id], references: [capacity_group_id], onUpdate: Restrict, map: "user_role_ibfk_1")
+
+  @@index([user_role], map: "user_role")
+  @@index([user_capacity_group_id], map: "user_capacity_group_id")
+}
+
+model user_capacity_group {
+  capacity_group_id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  capacity_group_name            String      @unique(map: "capacity_group_name") @db.VarChar(50)
+  capacity_group_description     String?     @db.VarChar(1000)
+  user_capacity_group_permission Json?
+  createdAt                      BigInt      @db.UnsignedBigInt
+  user_role                      user_role[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cronjob {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  cronjob_name String    @db.VarChar(255)
+  cronjob_slug String    @unique(map: "cronjob_slug") @db.VarChar(255)
+  frequency    String    @db.VarChar(150)
+  lastRun      DateTime? @db.DateTime(0)
+  createdAt    BigInt    @db.UnsignedBigInt
+}
+
+model product_group_income {
+  id                 BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  product_id         BigInt  @unique(map: "product_id_2") @db.UnsignedBigInt
+  group_income_value Int     @default(0) @db.UnsignedMediumInt
+  product            product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: Restrict, map: "product_group_income_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model product_variant_group_income {
+  id                 BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  variant_id         BigInt          @unique(map: "variant_id_2") @db.UnsignedBigInt
+  group_income_value Int             @default(0) @db.UnsignedMediumInt
+  product_variant    product_variant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: Restrict, map: "product_variant_group_income_ibfk_1")
+
+  @@index([variant_id], map: "variant_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model group_income_order {
+  group_income_order_id    BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  order_id                 BigInt           @db.UnsignedBigInt
+  product_id               BigInt           @db.UnsignedBigInt
+  variant_id               BigInt?          @db.UnsignedBigInt
+  quantity                 Int              @default(1)
+  group_income_value       Int              @default(0) @db.UnsignedInt
+  total_group_income_value Int              @default(0) @db.UnsignedInt
+  customer_id              BigInt           @db.UnsignedBigInt
+  createdAt                BigInt           @db.UnsignedBigInt
+  orders                   orders           @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction, map: "group_income_order_ibfk_1")
+  product                  product          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction, map: "group_income_order_ibfk_2")
+  product_variant          product_variant? @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: NoAction, map: "group_income_order_ibfk_3")
+  customer                 user             @relation(fields: [customer_id], references: [user_id], onDelete: Cascade, onUpdate: Restrict, map: "group_income_order_ibfk_4")
+
+  @@index([customer_id], map: "customer_id")
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
+  @@index([variant_id], map: "variant_id")
+}
