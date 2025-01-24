@@ -13,6 +13,8 @@ class NBee_Bridge
 
     public static function init()
     {
+        require_once NBEE_PLUGIN_PATH . 'includes/helpers/helper.php';
+
         // Tải các tệp admin và public
         if (is_admin()) {
             require_once NBEE_PLUGIN_PATH . 'admin/admin.php';

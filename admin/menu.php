@@ -55,9 +55,9 @@ add_action('admin_menu', 'nbee_admin_menu');
 
 function registerCustomAdminCss()
 {
-    wp_enqueue_style('nbee-panel-css', NBEE_PLUGIN_PATH . 'admin/css/panel.css', __FILE__);
-    wp_enqueue_style('nbee-css', NBEE_PLUGIN_PATH . 'admin/css/style.css', __FILE__);
-    wp_enqueue_script('nbee-js', NBEE_PLUGIN_PATH . 'admin/css/main.js', __FILE__, array('jquery'), NBEE_PLUGIN_VERSION);
+    wp_enqueue_style('nbee-panel-css', plugins_url('css/panel.css', __FILE__));
+    wp_enqueue_style('nbee-css', plugins_url('css/style.css', __FILE__));
+    wp_enqueue_script('nbee-js', plugins_url('js/main.js', __FILE__), array('jquery'), NBEE_PLUGIN_VERSION);
 }
 add_action('admin_head', 'registerCustomAdminCss');
 
