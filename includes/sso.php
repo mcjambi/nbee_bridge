@@ -5,20 +5,22 @@
  * $selected_page = get_option( 'nbee_sso_page' );
  */
 
- /**
-  * Config CURL ...
-  */
- function my_http_api_curl($handle) {
-    curl_setopt( $handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1 ); 
+/**
+ * Config CURL ...
+ */
+function my_http_api_curl($handle)
+{
+    curl_setopt($handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
     curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, 0); // Skip SSL Verification
- }
-    
- add_action('http_api_curl', 'my_http_api_curl');
+}
+
+add_action('http_api_curl', 'my_http_api_curl');
 
 
 
- add_action( 'pre_get_posts', 'nbee_check_post_if_in_sso_page' );
- function nbee_check_post_if_in_sso_page($query) {
+add_action('pre_get_posts', 'nbee_check_post_if_in_sso_page');
+function nbee_check_post_if_in_sso_page($query)
+{
     $auth_callback = isset($_GET['auth_callback']) ? true : false;
     $oauth_access_token = isset($_GET['oauth_access_token']) ? sanitize_text_field($_GET['oauth_access_token']) : false;
 
@@ -29,7 +31,7 @@
         $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
         $nbee_client_public_key = get_option('nbee_client_public_key');
         $response = wp_remote_get(
-            esc_url_raw( $nbee_backend_crm_uri . '/user' ),
+            esc_url_raw($nbee_backend_crm_uri . '/user'),
             array(
                 'headers' => array(
                     'Content-Type' => 'application/json',
@@ -40,7 +42,7 @@
             )
         );
         try {
-            $body = wp_remote_retrieve_body( $response );
+            $body = wp_remote_retrieve_body($response);
             $userObject = @json_decode($body);
             /**
              * user_id
@@ -56,11 +58,11 @@
             /**
              * Check if user is exist 
              */
-            $checkUser = get_user_by('email', $userObject->user_email );
-            $password = ( $userObject->user_email . LOGGED_IN_KEY );
-            $user_login = sanitize_user( $userObject->user_email );
-            if ( ! $checkUser ) {
-                $checkUser = wp_insert_user( array(
+            $checkUser = get_user_by('email', $userObject->user_email);
+            $password = ($userObject->user_email . LOGGED_IN_KEY);
+            $user_login = sanitize_user($userObject->user_email);
+            if (! $checkUser) {
+                $checkUser = wp_insert_user(array(
                     'user_email' => $userObject->user_email,
                     'user_login' => $user_login,
                     'user_pass' => $password,
@@ -72,70 +74,69 @@
                 /**
                  * Khi hai bên đều tồn tại một tài khoản, thì cần phải reset mật khẩu để có thể đăng nhập tự động...
                  */
-                @wp_set_password( $password, $checkUser->ID );
+                @wp_set_password($password, $checkUser->ID);
             }
 
-            $checkUser = get_user_by('email', $userObject->user_email );
-            $user = wp_signon( array(
+            $checkUser = get_user_by('email', $userObject->user_email);
+            $user = wp_signon(array(
                 'user_login'    => $checkUser->user_login,
                 'user_password' => $password,
                 'remember'      => true,
-            ) );
+            ));
 
-            if ( is_wp_error( $user ) ) {
+            if (is_wp_error($user)) {
                 echo $user->get_error_message();
                 die();
             } else {
-                wp_redirect( home_url() . '#sso_login_success' );
+                wp_redirect(home_url() . '#sso_login_success');
                 die();
             }
-
-
         } catch (Exception $e) {
             die($e->getMessage());
         }
     }
 
     // normal redirect to SSO ...
-    if ( $query->is_page && ! is_admin() && $auth_callback == false ) {
-        $selected_page = get_option( 'nbee_sso_page' );
-        if( $query->get_queried_object_id() == $selected_page ) {
+    if ($query->is_page && ! is_admin() && $auth_callback == false) {
+        $selected_page = get_option('nbee_sso_page');
+        if ($query->get_queried_object_id() == $selected_page) {
             $nbee_frontend_crm_uri = get_option('nbee_frontend_crm_uri');
             $referrer = '';
             $status = get_option("nbee_referrer_tracking_status");
-            if ( $status == "1") {
+            if ($status == "1") {
                 $referrer = isset($_COOKIE['user_referrer']) ? sanitize_text_field($_COOKIE['user_referrer']) : '';
             }
 
             $nbee_client_public_key = get_option('nbee_client_public_key');
-            $url = sprintf('%s/login/sso?user_referrer=%s&redirect_to=%s&app_id=%s', $nbee_frontend_crm_uri, $referrer, get_permalink( $query->get_queried_object_id()) . '?auth_callback=true', $nbee_client_public_key );
-            wp_redirect( $url );
+            $url = sprintf('%s/login/sso?user_referrer=%s&redirect_to=%s&app_id=%s', $nbee_frontend_crm_uri, $referrer, get_permalink($query->get_queried_object_id()) . '?auth_callback=true', $nbee_client_public_key);
+            wp_redirect($url);
             exit;
         }
     }
- }
+}
 
 
 
- /**
-  * Avoid display something strange, remove content, display loading text only ...
-  */
- add_filter('the_content','nbee_check_post_if_in_sso_page_content');
- function nbee_check_post_if_in_sso_page_content( $content ) {
+/**
+ * Avoid display something strange, remove content, display loading text only ...
+ */
+add_filter('the_content', 'nbee_check_post_if_in_sso_page_content');
+function nbee_check_post_if_in_sso_page_content($content)
+{
     global $post;
-    $selected_page = get_option( 'nbee_sso_page' );
-    if ( $post->ID == $selected_page) {
+    $selected_page = get_option('nbee_sso_page');
+    if ($post->ID == $selected_page) {
         return 'LOADING...';
     }
     return $content;
- }
+}
 
 
 
 
 
-function nbee_sso_enqueue_styles() {
-    wp_enqueue_script( 'nbee-sso-login', plugins_url('nbee_bridge/media') . '/sso.js', array(), NBEE_PLUGIN_VERSION );
+function nbee_sso_enqueue_styles()
+{
+    wp_enqueue_script('nbee-sso-login', NBEE_PLUGIN_PATH . 'admin/js/sso.js', array(), NBEE_PLUGIN_VERSION);
 }
 add_action('wp_enqueue_scripts', 'nbee_sso_enqueue_styles');
-

@@ -54,15 +54,16 @@ If you find the plugin helpful, consider contributing at [your contribution link
 == Changelog ==
 
 = 1.0 =
-* Initial release of the plugin.
+
+- Initial release of the plugin.
 
 == Screenshots ==
 
-1. A screenshot illustrating the plugin in the `/assets` directory.
-2. The plugin icon in the `/assets` directory.
+1. A screenshot illustrating the plugin in the `/assets/images` directory.
+2. The plugin icon in the `/assets/images` directory.
 
 == License ==
 
 GPLv2 or later.
 
-(C) jamviet.com 
+(C) jamviet.com

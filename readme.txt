@@ -57,7 +57,7 @@ If you find the plugin helpful, consider contributing at [your contribution link
 == Screenshots ==
 
 1. A screenshot illustrating the plugin in the `/assets` directory.
-2. The plugin icon in the `/assets` directory.
+2. The plugin icon in the `/assets/images` directory.
 
 == License ==
 
