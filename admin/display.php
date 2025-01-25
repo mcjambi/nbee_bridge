@@ -282,6 +282,8 @@ function nbee_ecommerce_sync()
                     </div>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_store_settings')"><?php _e('Cài đặt cửa hàng') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_catalog')"><?php _e('Danh mục sản phẩm') ?></button>
+                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_brand')"><?php _e('Thương hiệu sản phẩm') ?></button>
+                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_collection')"><?php _e('Bộ sưu tập sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_products')"><?php _e('Sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức') ?></button>
@@ -336,6 +338,12 @@ function nbee_ecommerce_sync()
                     switch (action) {
                         case 'sync_product_catalog':
                             message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Danh mục sản phẩm?'); ?>';
+                            break;
+                        case 'sync_product_brand':
+                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Thương hiệu sản phẩm?'); ?>';
+                            break;
+                        case 'sync_product_collection':
+                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Bộ sưu tập sản phẩm?'); ?>';
                             break;
                         case 'sync_products':
                             message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Sản phẩm?'); ?>';
