@@ -184,6 +184,9 @@ function nbee_sync_product_brand()
             update_term_meta($term_id, 'order', $brand['brand_order']);
             update_term_meta($term_id, 'status', $brand['brand_status']);
             update_term_meta($term_id, 'createdAt', $brand['createdAt']);
+
+            // Xóa thuộc tính 'brand_description' khỏi mảng $brand
+            unset($brand['brand_description']);
             update_term_meta($term_id, 'product_brand_fields', json_encode($brand, JSON_UNESCAPED_UNICODE));
 
             // Cập nhật thumbnail với link hình ảnh phù hợp

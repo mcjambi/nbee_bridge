@@ -286,7 +286,7 @@ function nbee_ecommerce_sync()
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_collection')"><?php _e('Bộ sưu tập sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_products')"><?php _e('Sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức') ?></button>
+                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức thanh toán') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_shipping_methods')"><?php _e('Phương thức vận chuyển') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_promotions')"><?php _e('Khuyến mãi') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_customers')"><?php _e('Khách hàng') ?></button>

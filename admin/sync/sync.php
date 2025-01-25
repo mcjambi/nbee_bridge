@@ -2,6 +2,7 @@
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-category.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-collection.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-brand.php";
+require_once NBEE_PLUGIN_PATH . "admin/sync/customer.php";
 
 add_action('admin_post_nbee_login_admin', 'nbee_handle_login');
 
@@ -35,7 +36,7 @@ function nbee_handle_login()
     $data = json_decode($body, true);
 
     if (isset($data['access_token']) && isset($data['expires_at'])) {
-        setcookie('access_token', $data['access_token'], $data['expires_at'] / 1000, COOKIEPATH, COOKIE_DOMAIN);
+        setcookie('access_token', $data['access_token'], (int) $data['expires_at'] / 1000, COOKIEPATH, COOKIE_DOMAIN);
         wp_redirect(admin_url('admin.php?page=nbee_ecommerce_sync'));
         exit;
     } else {
@@ -64,6 +65,9 @@ function nbee_ecommerce_sync_handler()
             break;
         case 'sync_product_brand':
             nbee_sync_product_brand();
+            break;
+        case 'sync_customers':
+            nbee_sync_customers();
             break;
             // ...existing code...
     }

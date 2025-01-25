@@ -79,6 +79,8 @@ function nbee_sync_product_category()
                 update_term_meta($term_id, 'tags', $category['category_tags']);
             }
             update_term_meta($term_id, 'createdAt', $category['createdAt']);
+            // Xóa thuộc tính 'category_description' khỏi mảng $category
+            unset($category['category_description']);
             update_term_meta($term_id, 'product_category_fields', json_encode($category, JSON_UNESCAPED_UNICODE));
 
             // Cập nhật thumbnail với link hình ảnh phù hợp
