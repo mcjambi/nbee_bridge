@@ -1,6 +1,9 @@
 <?php
 function nbee_sync_product_category()
 {
+    global $wpdb; // Kết nối database WordPress
+    $tbl_id_mapping = $wpdb->prefix . 'nbee_id_mapping'; // Bảng ánh xạ ID
+
     $page = 1; // Bắt đầu từ trang 1
     $limit = 100; // Số lượng danh mục mỗi lần đồng bộ
     $is_more_data = true; // Biến kiểm tra có còn dữ liệu hay không
@@ -37,39 +40,53 @@ function nbee_sync_product_category()
             continue;
         }
 
-
         foreach ($categories as $category) {
-            // Kiểm tra xem category đã tồn tại hay chưa
-            $existing_term = get_term_by('slug', $category['category_slug'], 'product_cat');
+            // Lấy `wp_id` từ bảng ánh xạ
+            $wp_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'category'",
+                $category['category_id']
+            ));
 
-            if ($existing_term) {
-                // Nếu danh mục tồn tại, cập nhật thông tin
+            if ($wp_id) {
+                // Nếu đã ánh xạ, cập nhật danh mục
                 wp_update_term(
-                    $existing_term->term_id,
+                    $wp_id,
                     'product_cat',
                     array(
                         'name'        => $category['category_name'],
-                        'description' => $category['category_description'],
+                        'description' => isset($category['category_description']) ? $category['category_description'] : '',
                         'slug'        => $category['category_slug'],
                     )
                 );
-                $term_id = $existing_term->term_id;
+                $term_id = $wp_id;
             } else {
-                // Nếu danh mục chưa tồn tại, tạo mới
+                // Nếu chưa ánh xạ, tạo mới danh mục
                 $term = wp_insert_term(
                     $category['category_name'],
                     'product_cat',
                     array(
-                        'description' => $category['category_description'],
+                        'description' => isset($category['category_description']) ? $category['category_description'] : '',
                         'slug'        => $category['category_slug'],
                     )
                 );
 
                 if (is_wp_error($term)) {
+                    error_log("Error while creating category: " . $term->get_error_message());
                     // Nếu có lỗi khi tạo danh mục, tiếp tục vòng lặp
                     continue;
                 }
                 $term_id = $term['term_id'];
+
+                // Thêm ánh xạ vào bảng mapping
+                $wpdb->insert(
+                    $tbl_id_mapping,
+                    array(
+                        'wp_id'   => $term_id,
+                        'nbee_id' => $category['category_id'],
+                        'type'    => 'category',
+                    ),
+                    array('%d', '%s', '%s')
+                );
             }
 
             // Cập nhật các metadata khác

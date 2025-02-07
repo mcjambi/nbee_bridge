@@ -30,6 +30,10 @@ add_action('init', 'nbee_register_product_collection_taxonomy');
 
 function nbee_sync_product_collection()
 {
+    global $wpdb; // Kết nối database WordPress
+    $tbl_id_mapping = $wpdb->prefix . 'nbee_id_mapping'; // Bảng ánh xạ ID
+
+
     $page = 1; // Start from page 1
     $limit = 100; // Number of collections per sync
     $is_more_data = true; // Check if there is more data
@@ -68,12 +72,16 @@ function nbee_sync_product_collection()
 
         foreach ($collections as $collection) {
             // Check if collection already exists
-            $existing_term = get_term_by('slug', $collection['collection_slug'], 'product_collection');
+            // Lấy `wp_id` từ bảng ánh xạ
+            $wp_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'collection'",
+                $collection['collection_id']
+            ));
 
-            if ($existing_term) {
+            if ($wp_id) {
                 // If collection exists, update information
                 wp_update_term(
-                    $existing_term->term_id,
+                    $wp_id,
                     'product_collection',
                     array(
                         'name'        => $collection['collection_name'],
@@ -81,7 +89,7 @@ function nbee_sync_product_collection()
                         'slug'        => $collection['collection_slug'],
                     )
                 );
-                $term_id = $existing_term->term_id;
+                $term_id = $wp_id;
             } else {
                 // If collection does not exist, create new
                 $term = wp_insert_term(
@@ -94,10 +102,22 @@ function nbee_sync_product_collection()
                 );
 
                 if (is_wp_error($term)) {
+                    error_log("Error while creating collection: " . $term->get_error_message());
                     // If error occurs while creating collection, continue loop
                     continue;
                 }
                 $term_id = $term['term_id'];
+
+                // Thêm ánh xạ vào bảng mapping
+                $wpdb->insert(
+                    $tbl_id_mapping,
+                    array(
+                        'wp_id'   => $term_id,
+                        'nbee_id' => $collection['collection_id'],
+                        'type'    => 'collection',
+                    ),
+                    array('%d', '%s', '%s')
+                );
             }
 
             // Update other metadata

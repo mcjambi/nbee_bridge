@@ -27,6 +27,7 @@ function nbee_register_product_brand_taxonomy()
 }
 add_action('init', 'nbee_register_product_brand_taxonomy');
 
+/**
 // Form Thêm Brand
 function add_brand_image_field()
 {
@@ -42,7 +43,7 @@ function add_brand_image_field()
 }
 // add_action('product_brand_add_form_fields', 'add_brand_image_field', 10, 2);
 
-/**
+
 // Form Sửa Brand
 function edit_brand_image_field($term)
 {
@@ -110,6 +111,9 @@ add_filter('manage_product_brand_custom_column', 'display_brand_thumbnail_column
 // Sync brand về
 function nbee_sync_product_brand()
 {
+    global $wpdb; // Kết nối database WordPress
+    $tbl_id_mapping = $wpdb->prefix . 'nbee_id_mapping'; // Bảng ánh xạ ID
+
     $page = 1; // Start from page 1
     $limit = 100; // Number of brands per sync
     $is_more_data = true; // Check if there is more data
@@ -148,12 +152,16 @@ function nbee_sync_product_brand()
 
         foreach ($brands as $brand) {
             // Check if brand already exists
-            $existing_term = get_term_by('slug', $brand['brand_slug'], 'product_brand');
+            // Lấy `wp_id` từ bảng ánh xạ
+            $wp_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'brand'",
+                $brand['brand_id']
+            ));
 
-            if ($existing_term) {
+            if ($wp_id) {
                 // If brand exists, update information
                 wp_update_term(
-                    $existing_term->term_id,
+                    $wp_id,
                     'product_brand',
                     array(
                         'name'        => $brand['brand_name'],
@@ -161,7 +169,7 @@ function nbee_sync_product_brand()
                         'slug'        => $brand['brand_slug'],
                     )
                 );
-                $term_id = $existing_term->term_id;
+                $term_id = $wp_id;
             } else {
                 // If brand does not exist, create new
                 $term = wp_insert_term(
@@ -174,15 +182,27 @@ function nbee_sync_product_brand()
                 );
 
                 if (is_wp_error($term)) {
+                    error_log("Error while creating brand: " . $term->get_error_message());
                     // If error occurs while creating brand, continue loop
                     continue;
                 }
                 $term_id = $term['term_id'];
+
+                // Thêm ánh xạ vào bảng mapping
+                $wpdb->insert(
+                    $tbl_id_mapping,
+                    array(
+                        'wp_id'   => $term_id,
+                        'nbee_id' => $brand['brand_id'],
+                        'type'    => 'brand',
+                    ),
+                    array('%d', '%s', '%s')
+                );
             }
 
             // Update other metadata
-            update_term_meta($term_id, 'order', $brand['brand_order']);
-            update_term_meta($term_id, 'status', $brand['brand_status']);
+            update_term_meta($term_id, 'order', isset($brand['brand_order']) ? $brand['brand_order'] : '');
+            update_term_meta($term_id, 'status', isset($brand['brand_status']) ? $brand['brand_status'] : '');
             update_term_meta($term_id, 'createdAt', $brand['createdAt']);
 
             // Xóa thuộc tính 'brand_description' khỏi mảng $brand

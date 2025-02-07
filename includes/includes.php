@@ -4,6 +4,26 @@ class NBee_Bridge
     public static function activate()
     {
         // Logic khi plugin được kích hoạt
+
+        global $wpdb;
+
+        // Tạo bảng lưu trữ id mapping giữa 2 hệ thống
+        $table_name = $wpdb->prefix . 'nbee_id_mapping';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        // Câu lệnh SQL để tạo bảng.
+        $sql = "CREATE TABLE $table_name (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        wp_id BIGINT(20) NOT NULL,
+        nbee_id VARCHAR(255) NOT NULL,
+        type ENUM('product', 'category', 'brand', 'collection', 'customer', 'variant') NOT NULL,
+        PRIMARY KEY  (id),
+        UNIQUE KEY unique_wp_nbee (wp_id, nbee_id, type)
+    ) $charset_collate;";
+
+        // Gọi hàm dbDelta để thực thi SQL.
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
     }
 
     public static function deactivate()
