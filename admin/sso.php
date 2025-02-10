@@ -67,7 +67,7 @@ function nbee_check_post_if_in_sso_page($query)
                     'user_login' => $user_login,
                     'user_pass' => $password,
                     'display_name' => $userObject->display_name,
-                    'role' => $userObject->user_role || 'user',
+                    'role' => $userObject->user_role ?? 'user',
                     'description' => $userObject->bio,
                 ));
             } else {

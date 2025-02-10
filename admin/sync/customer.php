@@ -18,7 +18,8 @@ function nbee_sync_customers()
             $nbee_backend_crm_uri . '/customer?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-authorization' => $token,
+                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
                 ),
             )
         );

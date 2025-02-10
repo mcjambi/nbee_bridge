@@ -17,7 +17,8 @@ function nbee_sync_coupons()
             $nbee_backend_crm_uri . '/voucher?page=' . $page . '&limit=' . $limit . '&sort=createdAt:desc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-authorization' => $token,
+                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
                 ),
             )
         );

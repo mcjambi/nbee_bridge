@@ -17,7 +17,8 @@ function nbee_sync_product_category()
             $nbee_backend_crm_uri . '/product_category/admin?page=' . $page . '&limit=' . $limit . '&sort=category_order:asc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-authorization' => $token,
+                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
                 ),
             )
         );

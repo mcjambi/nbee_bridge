@@ -47,7 +47,8 @@ function nbee_sync_product_collection()
             $nbee_backend_crm_uri . '/product_collection/admin?page=' . $page . '&limit=' . $limit . '&sort=collection_order:asc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-authorization' => $token,
+                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
                 ),
             )
         );

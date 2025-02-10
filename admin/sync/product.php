@@ -6,7 +6,7 @@ function nbee_sync_product()
 
 
     $page = 1;
-    $limit = 20;
+    $limit = 10;
     $is_more_data = true; // Biến kiểm tra có còn dữ liệu hay không
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
@@ -15,10 +15,11 @@ function nbee_sync_product()
     while ($is_more_data && $token) {
 
         $response = wp_remote_get(
-            $nbee_backend_crm_uri . '/product/admin?page=' . $page . '&limit=' . $limit . '&sort=createdAt:asc',
+            $nbee_backend_crm_uri . '/sync/products?page=' . $page . '&limit=' . $limit . '&sort=createdAt:asc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-authorization' => $token,
+                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
                 ),
             )
         );
@@ -55,7 +56,6 @@ function nbee_sync_product()
             ));
 
 
-
             if ($wp_id) {
                 $wc_product = wc_get_product($wp_id); // Lấy đối tượng sản phẩm
 
@@ -79,13 +79,12 @@ function nbee_sync_product()
                 }
             }
 
-
             // Cập nhật các thuộc tính cơ bản của sản phẩm
             $wc_product->set_name($product['product_name']);
             $wc_product->set_description($product['product_description']);
             $wc_product->set_short_description($product['product_excerpt']);
             $wc_product->set_status($product['product_status'] == 1 ? 'publish' : 'draft');
-            $wc_product->set_regular_price($product['product_original_price']);
+            $wc_product->set_regular_price(!empty($product['product_original_price']) ? $product['product_original_price'] : $product['product_price']);
             $wc_product->set_sale_price($product['product_price']);
             $wc_product->set_price($product['product_price']);
             $wc_product->set_sku($product['product_sku']);
@@ -96,48 +95,41 @@ function nbee_sync_product()
             $wc_product->set_total_sales($product['product_meta']['product_sold_quantity']);
             $wc_product->set_stock_status('instock');
 
+
             $wc_product->set_virtual($product['product_type'] === 'service');
             $wc_product->set_manage_stock(false); // Không quản lý tồn kho
 
-
             // Cập nhật attributes nếu sản phẩm có biến thể
-            if ($product['product_has_variants']) {
-
-                $response_variant_group = wp_remote_get(
-                    $nbee_backend_crm_uri . '/product_variant_group?product_id=' . $product['product_id'],
-                    array(
-                        'headers' => array(
-                            'x-authorization' => $token
-                        ),
-                    )
-                );
-                $variant_groups = json_decode(wp_remote_retrieve_body($response_variant_group), true);
+            if (isset($product['product_variant_group'])) {
                 $attributes = array();
-                foreach ($variant_groups as $variant_group) {
+                foreach ($product["product_variant_group"] as $variant_group) {
 
                     if (!empty($variant_group['variant_group_name']) && !empty($variant_group['variant_group_value'])) {
 
                         $attribute_name = sanitize_title($variant_group['variant_group_name']); // Slug cho thuộc tính
                         $taxonomy = 'pa_' . $attribute_name; // Taxonomy
-                        $attribute_values = explode(',', $variant_group['variant_group_value']); // Các giá trị của thuộc tính
+                        $name_group = ucfirst($variant_group['variant_group_name']);
 
                         // Kiểm tra nếu thuộc tính chưa tồn tại, tạo mới
-                        if (!taxonomy_exists($taxonomy)) {
-                            $args = array(
-                                'slug'        => $attribute_name,
-                                'name'        => ucfirst($variant_group['variant_group_name']),
-                                'type'        => 'select',
-                                'order_by'    => 'menu_order',
+                        if (!wc_attribute_taxonomy_id_by_name($name_group)) {
+                            wc_create_attribute([
+                                'slug'         => $taxonomy,
+                                'name'         => $name_group,
+                                'type'         => 'select',
+                                'order_by'     => 'menu_order',
                                 'has_archives' => false,
-                            );
-                            wc_create_attribute($args);
+                            ]);
                         }
+
+                        // Lấy danh sách giá trị thuộc tính
+                        $attribute_values = array_map(function ($attr) {
+                            return $attr['attribute_name'];
+                        }, $variant_group['product_variant_group_attribute']);
 
                         // Tạo đối tượng WC_Product_Attribute
                         $wc_attribute = new WC_Product_Attribute();
-                        $wc_attribute->set_name($taxonomy);
+                        $wc_attribute->set_name($name_group);
                         $wc_attribute->set_options($attribute_values);
-                        $wc_attribute->set_position(0);
                         $wc_attribute->set_visible(true);
                         $wc_attribute->set_variation(true); // Gán thuộc tính cho variant
 
@@ -150,7 +142,8 @@ function nbee_sync_product()
 
             // Lưu sản phẩm
             $wc_product->save();
-            $product_id = $wc_product->get_id(); // Lấy ID sản phẩm sau khi lưu
+            $product_id = $wc_product->get_id(); // Lấy ID sản phẩm
+
 
             if (!$wp_id) {
                 // Thêm ánh xạ vào bảng mapping
@@ -164,7 +157,6 @@ function nbee_sync_product()
                     array('%d', '%s', '%s')
                 );
             }
-
             // Tách chuỗi tags thành mảng
             $product_tags = array_map('trim', explode(',', $product['product_tags']));
             $product_tags = array_filter($product_tags); // Xóa phần tử rỗng nếu có
@@ -172,6 +164,98 @@ function nbee_sync_product()
 
             unset($product['product_description'], $product['product_excerpt']);
             update_post_meta($product_id, '_product_fields', json_encode($product, JSON_UNESCAPED_UNICODE));
+
+            // Cập nhật phân loại sản phẩm
+            if (isset($product['product_variant']) && $product['product_has_variants']) {
+                foreach ($product['product_variant'] as $variant) {
+                    if (empty($variant['variant_name'])) {
+                        continue; // Bỏ qua nếu không đủ dữ liệu cơ bản
+                    }
+
+                    // Kiểm tra nếu variant đã tồn tại, nếu chưa thì tạo mới
+                    $wp_variant_id = $wpdb->get_var($wpdb->prepare(
+                        "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'variant'",
+                        $variant['variant_id']
+                    ));
+
+                    if ($wp_variant_id) {
+                        // Nếu variant đã tồn tại, lấy thông tin variant
+                        $wc_variant = new WC_Product_Variation($wp_variant_id);
+                    } else {
+                        // Nếu variant chưa tồn tại, tạo mới
+                        $wc_variant = new WC_Product_Variation();
+                        $wc_variant->set_parent_id($product_id); // Gán product_id cho variant
+                    }
+
+                    // Cập nhật thông tin của variant
+                    $wc_variant->set_name($variant['variant_name']);
+                    $wc_variant->set_slug($variant['variant_slug']);
+                    $wc_variant->set_sku($variant['variant_sku']);
+                    $wc_variant->set_description($variant['variant_excerpt']);
+                    $wc_variant->set_regular_price(!empty($variant['variant_original_price']) ? $variant['variant_original_price'] : $variant['variant_price']);
+                    $wc_variant->set_sale_price($variant['variant_price']);
+                    $wc_variant->set_price($variant['variant_price']);
+                    $wc_variant->set_stock_status('instock');
+                    $wc_variant->set_status($variant['variant_status'] == 1 ? 'publish' : 'draft');
+                    error_log($variant['variant_name']);
+                    error_log($variant['variant_original_price']);
+                    error_log($variant['variant_price']);
+                    error_log($wc_variant->get_price());
+                    error_log($wc_variant->get_regular_price());
+                    error_log($wc_variant->get_sale_price());
+
+                    // Gán thuộc tính cho variant
+                    $attributes = [];
+                    foreach ($variant['product_variant_option'] as $option) {
+                        foreach ($product['product_variant_group'] as $variant_group) {
+                            if ($variant_group['id'] === $option['product_variant_group_id']) {
+                                foreach ($variant_group['product_variant_group_attribute'] as $attribute) {
+                                    if ($attribute['id'] === $option['product_variant_group_attribute_id']) {
+                                        $taxonomy = sanitize_title($variant_group['variant_group_name']);
+                                        $attributes[$taxonomy] = $attribute['attribute_name'];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $wc_variant->set_attributes($attributes);
+
+
+                    // Cập nhật thông tin thumbnail cho variant
+                    if (isset($variant['variant_thumbnail_to_media'])) {
+                        $variant_thumbnail_url = isset($variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512'])
+                            ? $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512']
+                            : $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_url'];
+
+                        if (!empty($variant_thumbnail_url) && filter_var($variant_thumbnail_url, FILTER_VALIDATE_URL)) {
+                            $media_id = upload_image_to_media_library($variant_thumbnail_url);
+                            $wc_variant->set_image_id($media_id);
+                        }
+                    }
+
+
+                    // Lưu variant
+                    $wc_variant->save();
+                    $variant_id = $wc_variant->get_id(); // Lấy ID variant sau khi lưu
+
+                    // Thêm ánh xạ ID nếu variant mới
+                    if (!$wp_variant_id) {
+                        $wpdb->insert(
+                            $tbl_id_mapping,
+                            array(
+                                'wp_id'   => $variant_id,
+                                'nbee_id' => $variant['variant_id'],
+                                'type'    => 'variant',
+                            ),
+                            array('%d', '%s', '%s')
+                        );
+                    }
+
+                    // Cập nhật meta cho variant
+                    unset($variant['product_variant_commission'], $variant['product_variant_rebate'], $variant['product_variant_tiered_rebate'], $variant['variant_has_commission'], $variant['variant_has_rebate'], $variant['variant_has_tiered_rebate']);
+                    update_post_meta($variant_id, '_product_variant_fields', json_encode($variant, JSON_UNESCAPED_UNICODE));
+                }
+            }
 
             // Set product categories
             if (!empty($product['product_to_category'])) {
@@ -185,6 +269,18 @@ function nbee_sync_product()
                 wp_set_object_terms($product_id, $category_ids, 'product_cat');
             }
 
+            // Set product collections
+            if (!empty($product['product_to_collection'])) {
+                $collection_ids = array();
+                foreach ($product['product_to_collection'] as $collection) {
+                    $term = get_term_by('slug', $collection['product_collection']['collection_slug'], 'product_collection');
+                    if ($term) {
+                        $collection_ids[] = $term->term_id;
+                    }
+                }
+                wp_set_object_terms($product_id, $collection_ids, 'product_collection');
+            }
+
             // Set product brand
             if (!empty($product['product_to_brand'])) {
                 $brand_term = get_term_by('slug', $product['product_to_brand']['product_brand']['brand_slug'], 'product_brand');
@@ -192,47 +288,9 @@ function nbee_sync_product()
                     wp_set_object_terms($product_id, $brand_term->term_id, 'product_brand');
                 }
             }
-
-
-            // Cập nhật wp_wc_product_meta_lookup
-            list($min_price, $max_price) = explode('-', $product['product_price_range']);
-            // Kiểm tra nếu product_price_range có dữ liệu hợp lệ trước khi tách
-            if (!empty($product['product_price_range']) && strpos($product['product_price_range'], '-') !== false) {
-                list($min_price, $max_price) = explode('-', $product['product_price_range']);
-            } else {
-                // Gán giá trị mặc định nếu không có giá hoặc giá không hợp lệ
-                $min_price = $product['product_price'];
-                $max_price = $product['product_price'];
-            }
-
-            global $wpdb;
-            $wpdb->replace(
-                $wpdb->prefix . 'wc_product_meta_lookup',
-                array(
-                    'product_id'     => $product_id,
-                    'sku'            => $product['product_sku'],
-                    'min_price'      => $min_price,
-                    'max_price'      => $max_price,
-                    'virtual'        => ($product['product_type'] === 'service') ? 1 : 0,
-                    'onsale'         => ($product['product_price'] < $product['product_original_price']) ? 1 : 0,
-                    'rating_count'   => $product['product_meta']['product_review_count'],
-                    'average_rating' => $product['product_meta']['product_review_point'],
-                    'total_sales'    => $product['product_meta']['product_sold_quantity'],
-                    'stock_status'   => 'instock',
-                ),
-                array(
-                    '%d',
-                    '%s',
-                    '%f',
-                    '%f',
-                    '%d',
-                    '%d',
-                    '%d',
-                    '%f',
-                    '%d',
-                    '%d'
-                )
-            );
         }
+
+        // Tăng số trang lên 1 để lấy dữ liệu tiếp theo
+        $page++;
     }
 }
