@@ -101,13 +101,15 @@ function nbee_sync_product_category()
             update_term_meta($term_id, 'product_category_fields', json_encode($category, JSON_UNESCAPED_UNICODE));
 
             // Cập nhật thumbnail với link hình ảnh phù hợp
-            $category_thumbnail_url = isset($category['category_thumbnail_to_media']['media_thumbnail']['scale-512'])
-                ? $nbee_backend_media_uri . '/' . $category['category_thumbnail_to_media']['media_thumbnail']['scale-512']
-                : $nbee_backend_media_uri . '/' . $category['category_thumbnail_to_media']['media_url'];
+            if (isset($category['category_thumbnail_to_media'])) {
+                $category_thumbnail_url = isset($category['category_thumbnail_to_media']['media_thumbnail']['scale-512'])
+                    ? $nbee_backend_media_uri . '/' . $category['category_thumbnail_to_media']['media_thumbnail']['scale-512']
+                    : $nbee_backend_media_uri . '/' . $category['category_thumbnail_to_media']['media_url'];
 
-            if (!empty($category_thumbnail_url) && filter_var($category_thumbnail_url, FILTER_VALIDATE_URL)) {
-                $media_id = upload_image_to_media_library($category_thumbnail_url);
-                update_term_meta($term_id, 'thumbnail_id', $media_id);
+                if (!empty($category_thumbnail_url) && filter_var($category_thumbnail_url, FILTER_VALIDATE_URL)) {
+                    $media_id = upload_image_to_media_library($category_thumbnail_url);
+                    update_term_meta($term_id, 'thumbnail_id', $media_id);
+                }
             }
         }
 

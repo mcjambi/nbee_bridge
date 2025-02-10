@@ -86,14 +86,17 @@ function nbee_sync_product_variant()
 
 
             // Cập nhật thông tin thumbnail cho variant
-            $variant_thumbnail_url = isset($variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512'])
-                ? $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512']
-                : $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_url'];
+            if (isset($variant['variant_thumbnail_to_media'])) {
+                $variant_thumbnail_url = isset($variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512'])
+                    ? $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_thumbnail']['scale-512']
+                    : $nbee_backend_media_uri . '/' . $variant['variant_thumbnail_to_media']['media_url'];
 
-            if (!empty($variant_thumbnail_url) && filter_var($variant_thumbnail_url, FILTER_VALIDATE_URL)) {
-                $media_id = upload_image_to_media_library($variant_thumbnail_url);
-                $wc_variant->set_image_id($media_id);
+                if (!empty($variant_thumbnail_url) && filter_var($variant_thumbnail_url, FILTER_VALIDATE_URL)) {
+                    $media_id = upload_image_to_media_library($variant_thumbnail_url);
+                    $wc_variant->set_image_id($media_id);
+                }
             }
+
 
             // Lưu variant
             $wc_variant->save();

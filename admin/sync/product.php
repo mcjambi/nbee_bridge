@@ -68,14 +68,17 @@ function nbee_sync_product()
             }
 
             // Cập nhật thumbnail với link hình ảnh phù hợp
-            $product_thumbnail_url = isset($product['product_thumbnail_to_media']['media_thumbnail']['scale-512'])
-                ? $nbee_backend_media_uri . '/' . $product['product_thumbnail_to_media']['media_thumbnail']['scale-512']
-                : $nbee_backend_media_uri . '/' . $product['product_thumbnail_to_media']['media_url'];
+            if (isset($product['product_thumbnail_to_media'])) {
+                $product_thumbnail_url = isset($product['product_thumbnail_to_media']['media_thumbnail']['scale-512'])
+                    ? $nbee_backend_media_uri . '/' . $product['product_thumbnail_to_media']['media_thumbnail']['scale-512']
+                    : $nbee_backend_media_uri . '/' . $product['product_thumbnail_to_media']['media_url'];
 
-            if (!empty($product_thumbnail_url) && filter_var($product_thumbnail_url, FILTER_VALIDATE_URL)) {
-                $media_id = upload_image_to_media_library($product_thumbnail_url);
-                $wc_product->set_image_id($media_id);
+                if (!empty($product_thumbnail_url) && filter_var($product_thumbnail_url, FILTER_VALIDATE_URL)) {
+                    $media_id = upload_image_to_media_library($product_thumbnail_url);
+                    $wc_product->set_image_id($media_id);
+                }
             }
+
 
             // Cập nhật các thuộc tính cơ bản của sản phẩm
             $wc_product->set_name($product['product_name']);
