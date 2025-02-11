@@ -17,8 +17,7 @@ function nbee_sync_coupons()
             $nbee_backend_crm_uri . '/voucher?page=' . $page . '&limit=' . $limit . '&sort=createdAt:desc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token,
-                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
+                    'x-authorization' => $token
                 ),
             )
         );
@@ -119,15 +118,13 @@ function nbee_sync_coupons()
             update_post_meta($coupon->get_id(), 'coupon_fields', json_encode($voucher, JSON_UNESCAPED_UNICODE));
 
             // Cập nhật thumbnail với link hình ảnh phù hợp
-            if (isset($voucher['voucher_thumbnail_to_media'])) {
-                $voucher_thumbnail_url = isset($voucher['voucher_thumbnail_to_media']['media_thumbnail']['scale-512'])
-                    ? $nbee_backend_media_uri . '/' . $voucher['voucher_thumbnail_to_media']['media_thumbnail']['scale-512']
-                    : $nbee_backend_media_uri . '/' . $voucher['voucher_thumbnail_to_media']['media_url'];
+            $voucher_thumbnail_url = isset($voucher['voucher_thumbnail_to_media']['media_thumbnail']['scale-512'])
+                ? $nbee_backend_media_uri . '/' . $voucher['voucher_thumbnail_to_media']['media_thumbnail']['scale-512']
+                : $nbee_backend_media_uri . '/' . $voucher['voucher_thumbnail_to_media']['media_url'];
 
-                if (!empty($voucher_thumbnail_url) && filter_var($voucher_thumbnail_url, FILTER_VALIDATE_URL)) {
-                    $media_id = upload_image_to_media_library($voucher_thumbnail_url);
-                    update_post_meta($coupon->get_id(), 'thumbnail_id', $media_id);
-                }
+            if (!empty($voucher_thumbnail_url) && filter_var($voucher_thumbnail_url, FILTER_VALIDATE_URL)) {
+                $media_id = upload_image_to_media_library($voucher_thumbnail_url);
+                update_post_meta($coupon->get_id(), 'thumbnail_id', $media_id);
             }
 
             // Thêm ánh xạ vào bảng mapping nếu chưa có

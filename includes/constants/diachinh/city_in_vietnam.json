@@ -1,0 +1,569 @@
+{
+    "01": {
+        "name": "Hà Nội",
+        "slug": "ha-noi",
+        "type": "thanh-pho",
+        "name_with_type": "Thành phố Hà Nội",
+        "code": "01",
+        "latitude": "21.028511",
+        "longitude": "105.804817"
+    },
+    "02": {
+        "name": "Hà Giang",
+        "slug": "ha-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hà Giang",
+        "code": "02",
+        "latitude": "22.82333",
+        "longitude": "104.98357"
+    },
+    "04": {
+        "name": "Cao Bằng",
+        "slug": "cao-bang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Cao Bằng",
+        "code": "04",
+        "latitude": "22.66568",
+        "longitude": "106.25786"
+    },
+    "06": {
+        "name": "Bắc Kạn",
+        "slug": "bac-kan",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bắc Kạn",
+        "code": "06",
+        "latitude": "22.14130000",
+        "longitude": "105.83867000"
+    },
+    "08": {
+        "name": "Tuyên Quang",
+        "slug": "tuyen-quang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Tuyên Quang",
+        "code": "08",
+        "latitude": "21.76104",
+        "longitude": "105.22105"
+    },
+    "10": {
+        "name": "Lào Cai",
+        "slug": "lao-cai",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Lào Cai",
+        "code": "10",
+        "latitude": "22.356464",
+        "longitude": "103.873802"
+    },
+    "11": {
+        "name": "Điện Biên",
+        "slug": "dien-bien",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Điện Biên",
+        "code": "11",
+        "latitude": "21.626793",
+        "longitude": "103.158875"
+    },
+    "12": {
+        "name": "Lai Châu",
+        "slug": "lai-chau",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Lai Châu",
+        "code": "12",
+        "latitude": "22.39644",
+        "longitude": "103.45824"
+    },
+    "14": {
+        "name": "Sơn La",
+        "slug": "son-la",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Sơn La",
+        "code": "14",
+        "latitude": "21.3256",
+        "longitude": "103.91882"
+    },
+    "15": {
+        "name": "Yên Bái",
+        "slug": "yen-bai",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Yên Bái",
+        "code": "15",
+        "latitude": "21.71676890",
+        "longitude": "104.89858780"
+    },
+    "17": {
+        "name": "Hoà Bình",
+        "slug": "hoa-binh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hoà Bình",
+        "code": "17",
+        "latitude": "20.81717",
+        "longitude": "105.33759"
+    },
+    "19": {
+        "name": "Thái Nguyên",
+        "slug": "thai-nguyen",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Thái Nguyên",
+        "code": "19",
+        "latitude": "21.59422",
+        "longitude": "105.84817"
+    },
+    "20": {
+        "name": "Lạng Sơn",
+        "slug": "lang-son",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Lạng Sơn",
+        "code": "20",
+        "latitude": "21.85370800",
+        "longitude": "106.76151900"
+    },
+    "22": {
+        "name": "Quảng Ninh",
+        "slug": "quang-ninh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Quảng Ninh",
+        "code": "22",
+        "latitude": "20.959902",
+        "longitude": "107.042542"
+    },
+    "24": {
+        "name": "Bắc Giang",
+        "slug": "bac-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bắc Giang",
+        "code": "24",
+        "latitude": "21.28073",
+        "longitude": "106.19543"
+    },
+    "25": {
+        "name": "Phú Thọ",
+        "slug": "phu-tho",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Phú Thọ",
+        "code": "25",
+        "latitude": "21.26844300",
+        "longitude": "105.20455730"
+    },
+    "26": {
+        "name": "Vĩnh Phúc",
+        "slug": "vinh-phuc",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Vĩnh Phúc",
+        "code": "26",
+        "latitude": "21.360989499",
+        "longitude": "105.560460006"
+    },
+    "27": {
+        "name": "Bắc Ninh",
+        "slug": "bac-ninh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bắc Ninh",
+        "code": "27",
+        "latitude": "21.12144400",
+        "longitude": "106.11105010"
+    },
+    "30": {
+        "name": "Hải Dương",
+        "slug": "hai-duong",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hải Dương",
+        "code": "30",
+        "latitude": "20.94099",
+        "longitude": "106.33302"
+    },
+    "31": {
+        "name": "Hải Phòng",
+        "slug": "hai-phong",
+        "type": "thanh-pho",
+        "name_with_type": "Thành phố Hải Phòng",
+        "code": "31",
+        "latitude": "20.865139",
+        "longitude": "106.683830"
+    },
+    "33": {
+        "name": "Hưng Yên",
+        "slug": "hung-yen",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hưng Yên",
+        "code": "33",
+        "latitude": "20.85257110",
+        "longitude": "106.01699710"
+    },
+    "34": {
+        "name": "Thái Bình",
+        "slug": "thai-binh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Thái Bình",
+        "code": "34",
+        "latitude": "20.45175",
+        "longitude": "106.34771"
+    },
+    "35": {
+        "name": "Hà Nam",
+        "slug": "ha-nam",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hà Nam",
+        "code": "35",
+        "latitude": "20.540655387",
+        "longitude": "105.967071766"
+    },
+    "36": {
+        "name": "Nam Định",
+        "slug": "nam-dinh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Nam Định",
+        "code": "36",
+        "latitude": "20.43389",
+        "longitude": "106.17729"
+    },
+    "37": {
+        "name": "Ninh Bình",
+        "slug": "ninh-binh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Ninh Bình",
+        "code": "37",
+        "latitude": "20.25809",
+        "longitude": "105.97965"
+    },
+    "38": {
+        "name": "Thanh Hóa",
+        "slug": "thanh-hoa",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Thanh Hóa",
+        "code": "38",
+        "latitude": "19.80669200",
+        "longitude": "105.78518160"
+    },
+    "40": {
+        "name": "Nghệ An",
+        "slug": "nghe-an",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Nghệ An",
+        "code": "40",
+        "latitude": "18.679585",
+        "longitude": "105.681335"
+    },
+    "42": {
+        "name": "Hà Tĩnh",
+        "slug": "ha-tinh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hà Tĩnh",
+        "code": "42",
+        "latitude": "18.35595370",
+        "longitude": "105.88774940"
+    },
+    "44": {
+        "name": "Quảng Bình",
+        "slug": "quang-binh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Quảng Bình",
+        "code": "44",
+        "latitude": "17.531224566",
+        "longitude": "106.294154277"
+    },
+    "45": {
+        "name": "Quảng Trị",
+        "slug": "quang-tri",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Quảng Trị",
+        "code": "45",
+        "latitude": "16.747253063",
+        "longitude": "106.933126217"
+    },
+    "46": {
+        "name": "Thừa Thiên Huế",
+        "slug": "thua-thien-hue",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Thừa Thiên Huế",
+        "code": "46",
+        "latitude": "16.461109",
+        "longitude": "107.590866"
+    },
+    "48": {
+        "name": "Đà Nẵng",
+        "slug": "da-nang",
+        "type": "thanh-pho",
+        "name_with_type": "Thành phố Đà Nẵng",
+        "code": "48",
+        "latitude": "16.047079",
+        "longitude": "108.206230"
+    },
+    "49": {
+        "name": "Quảng Nam",
+        "slug": "quang-nam",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Quảng Nam",
+        "code": "49",
+        "latitude": "15.901141",
+        "longitude": "108.079628"
+    },
+    "51": {
+        "name": "Quảng Ngãi",
+        "slug": "quang-ngai",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Quảng Ngãi",
+        "code": "51",
+        "latitude": "15.15857",
+        "longitude": "108.84689"
+    },
+    "52": {
+        "name": "Bình Định",
+        "slug": "binh-dinh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bình Định",
+        "code": "52",
+        "latitude": "13.759660",
+        "longitude": "109.206123"
+    },
+    "54": {
+        "name": "Phú Yên",
+        "slug": "phu-yen",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Phú Yên",
+        "code": "54",
+        "latitude": "13.171572773",
+        "longitude": "109.059587026"
+    },
+    "56": {
+        "name": "Khánh Hòa",
+        "slug": "khanh-hoa",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Khánh Hòa",
+        "code": "56",
+        "latitude": "12.25850980",
+        "longitude": "109.05260760"
+    },
+    "58": {
+        "name": "Ninh Thuận",
+        "slug": "ninh-thuan",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Ninh Thuận",
+        "code": "58",
+        "latitude": "11.67387670",
+        "longitude": "108.86295720"
+    },
+    "60": {
+        "name": "Bình Thuận",
+        "slug": "binh-thuan",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bình Thuận",
+        "code": "60",
+        "latitude": "11.317883",
+        "longitude": "108.657959"
+    },
+    "62": {
+        "name": "Kon Tum",
+        "slug": "kon-tum",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Kon Tum",
+        "code": "62",
+        "latitude": "14.36272",
+        "longitude": "107.99901"
+    },
+    "64": {
+        "name": "Gia Lai",
+        "slug": "gia-lai",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Gia Lai",
+        "code": "64",
+        "latitude": "13.80789430",
+        "longitude": "108.10937500"
+    },
+    "66": {
+        "name": "Đắk Lắk",
+        "slug": "dak-lak",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Đắk Lắk",
+        "code": "66",
+        "latitude": "12.66747000",
+        "longitude": "108.03775000"
+    },
+    "67": {
+        "name": "Đắk Nông",
+        "slug": "dak-nong",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Đắk Nông",
+        "code": "67",
+        "latitude": "12.26464760",
+        "longitude": "107.60980600"
+    },
+    "68": {
+        "name": "Lâm Đồng",
+        "slug": "lam-dong",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Lâm Đồng",
+        "code": "68",
+        "latitude": "11.750435633",
+        "longitude": "108.096562941"
+    },
+    "70": {
+        "name": "Bình Phước",
+        "slug": "binh-phuoc",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bình Phước",
+        "code": "70",
+        "latitude": "11.755650093",
+        "longitude": "106.908197002"
+    },
+    "72": {
+        "name": "Tây Ninh",
+        "slug": "tay-ninh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Tây Ninh",
+        "code": "72",
+        "latitude": "11.31176",
+        "longitude": "106.0933"
+    },
+    "74": {
+        "name": "Bình Dương",
+        "slug": "binh-duong",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bình Dương",
+        "code": "74",
+        "latitude": "10.924067",
+        "longitude": "106.713028"
+    },
+    "75": {
+        "name": "Đồng Nai",
+        "slug": "dong-nai",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Đồng Nai",
+        "code": "75",
+        "latitude": "11.055265614",
+        "longitude": "107.189669004"
+    },
+    "77": {
+        "name": "Bà Rịa - Vũng Tàu",
+        "slug": "ba-ria-vung-tau",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bà Rịa - Vũng Tàu",
+        "code": "77",
+        "latitude": "10.34599000",
+        "longitude": "107.08426000"
+    },
+    "79": {
+        "name": "Hồ Chí Minh",
+        "slug": "ho-chi-minh",
+        "type": "thanh-pho",
+        "name_with_type": "Thành phố Hồ Chí Minh",
+        "code": "79",
+        "latitude": "10.82302",
+        "longitude": "106.62965"
+    },
+    "80": {
+        "name": "Long An",
+        "slug": "long-an",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Long An",
+        "code": "80",
+        "latitude": "10.6956",
+        "longitude": "106.2431"
+    },
+    "82": {
+        "name": "Tiền Giang",
+        "slug": "tien-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Tiền Giang",
+        "code": "82",
+        "latitude": "10.484436",
+        "longitude": "106.362572"
+    },
+    "83": {
+        "name": "Bến Tre",
+        "slug": "ben-tre",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bến Tre",
+        "code": "83",
+        "latitude": "10.24147",
+        "longitude": "106.37585"
+    },
+    "84": {
+        "name": "Trà Vinh",
+        "slug": "tra-vinh",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Trà Vinh",
+        "code": "84",
+        "latitude": "9.94719",
+        "longitude": "106.34225"
+    },
+    "86": {
+        "name": "Vĩnh Long",
+        "slug": "vinh-long",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Vĩnh Long",
+        "code": "86",
+        "latitude": "10.25369",
+        "longitude": "105.9722"
+    },
+    "87": {
+        "name": "Đồng Tháp",
+        "slug": "dong-thap",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Đồng Tháp",
+        "code": "87",
+        "latitude": "10.493799",
+        "longitude": "105.688179"
+    },
+    "89": {
+        "name": "An Giang",
+        "slug": "an-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh An Giang",
+        "code": "89",
+        "latitude": "10.521584",
+        "longitude": "105.125896"
+    },
+    "91": {
+        "name": "Kiên Giang",
+        "slug": "kien-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Kiên Giang",
+        "code": "91",
+        "latitude": "9.824959",
+        "longitude": "105.125893"
+    },
+    "92": {
+        "name": "Cần Thơ",
+        "slug": "can-tho",
+        "type": "thanh-pho",
+        "name_with_type": "Thành phố Cần Thơ",
+        "code": "92",
+        "latitude": "10.045162",
+        "longitude": "105.746857"
+    },
+    "93": {
+        "name": "Hậu Giang",
+        "slug": "hau-giang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Hậu Giang",
+        "code": "93",
+        "latitude": "9.75789800",
+        "longitude": "105.64125270"
+    },
+    "94": {
+        "name": "Sóc Trăng",
+        "slug": "soc-trang",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Sóc Trăng",
+        "code": "94",
+        "latitude": "9.602521",
+        "longitude": "105.973907"
+    },
+    "95": {
+        "name": "Bạc Liêu",
+        "slug": "bac-lieu",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Bạc Liêu",
+        "code": "95",
+        "latitude": "9.251556",
+        "longitude": "105.513649"
+    },
+    "96": {
+        "name": "Cà Mau",
+        "slug": "ca-mau",
+        "type": "tinh",
+        "name_with_type": "Tỉnh Cà Mau",
+        "code": "96",
+        "latitude": "9.17682",
+        "longitude": "105.15242"
+    }
+}

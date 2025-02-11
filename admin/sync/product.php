@@ -163,7 +163,7 @@ function nbee_sync_product()
             wp_set_object_terms($product_id, $product_tags, 'product_tag');
 
             unset($product['product_description'], $product['product_excerpt']);
-            update_post_meta($product_id, '_product_fields', json_encode($product, JSON_UNESCAPED_UNICODE));
+            update_post_meta($product_id, 'product_fields', json_encode($product, JSON_UNESCAPED_UNICODE));
 
             // Cập nhật phân loại sản phẩm
             if (isset($product['product_variant']) && $product['product_has_variants']) {
@@ -253,7 +253,7 @@ function nbee_sync_product()
 
                     // Cập nhật meta cho variant
                     unset($variant['product_variant_commission'], $variant['product_variant_rebate'], $variant['product_variant_tiered_rebate'], $variant['variant_has_commission'], $variant['variant_has_rebate'], $variant['variant_has_tiered_rebate']);
-                    update_post_meta($variant_id, '_product_variant_fields', json_encode($variant, JSON_UNESCAPED_UNICODE));
+                    update_post_meta($variant_id, 'product_variant_fields', json_encode($variant, JSON_UNESCAPED_UNICODE));
                 }
             }
 
