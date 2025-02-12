@@ -1,5 +1,41 @@
 <?php
 
+add_filter('get_avatar', 'custom_user_avatar', 10, 5);
+
+function custom_user_avatar($avatar, $id_or_email, $size, $default, $alt)
+{
+    // Lấy ID người dùng từ email hoặc ID
+    $user = false;
+    if (is_numeric($id_or_email)) {
+        $user = get_user_by('id', $id_or_email);
+    } elseif (is_string($id_or_email)) {
+        $user = get_user_by('email', $id_or_email);
+    } elseif ($id_or_email instanceof WP_User) {
+        $user = $id_or_email;
+    }
+
+    if ($user) {
+        $user_id = $user->ID;
+        $avatar_url = get_user_meta($user_id, 'user_avatar', true);
+
+        // Nếu người dùng có avatar tùy chỉnh, sử dụng nó
+        if (!empty($avatar_url)) {
+            $avatar = sprintf(
+                '<img src="%s" alt="%s" width="%d" height="%d" class="avatar avatar-%d photo" />',
+                esc_url($avatar_url),
+                esc_attr($alt),
+                (int) $size,
+                (int) $size,
+                (int) $size
+            );
+        }
+    }
+
+    return $avatar;
+}
+
+
+
 function nbee_sync_customers()
 {
     global $wpdb; // Kết nối database WordPress
@@ -16,7 +52,7 @@ function nbee_sync_customers()
     while ($is_more_data && $token) {
         // Send request to API with pagination parameters
         $response = wp_remote_get(
-            $nbee_backend_crm_uri . '/customer?page=' . $page . '&limit=' . $limit,
+            $nbee_backend_crm_uri . '/sync/users?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
                     'x-authorization' => $token,
@@ -44,11 +80,6 @@ function nbee_sync_customers()
         }
 
         foreach ($customers as $customer) {
-            // Bỏ qua nếu không có email và số điện thoại
-            if (empty($customer['user_email']) && empty($customer['user_phonenumber'])) {
-                continue;
-            }
-
             // Nếu không có email, tạo email tạm bằng số điện thoại
             $email = !empty($customer['user_email']) ? $customer['user_email'] : $customer['user_phonenumber'] . '@gmail.com';
 
@@ -59,18 +90,18 @@ function nbee_sync_customers()
             ));
 
             unset($customer['bio'], $customer['customer_to_user'], $customer['referrer']);
-            error_log($customer['display_name']);
 
             if ($wp_id) {
                 // Nếu user đã tồn tại, cập nhật dữ liệu
                 $user_id = wp_update_user(array(
                     'ID' => $wp_id,
-                    'user_pass' => wp_generate_password(),
+                    'user_pass' => $customer['user_password'] ?? "",
                     'user_email' => $email, // Cập nhật email
                     'display_name' => $customer['display_name'],
-                    'role' => 'customer',
+                    'first_name' => $customer['display_name'],
+                    'role' => $customer['user_role'],
                     'meta_input' => array(
-                        'user_avatar' => $nbee_backend_media_uri . '/' . $customer['user_avatar'],
+                        'user_avatar' => (!empty($customer['user_avatar']) ? $nbee_backend_media_uri . '/' . $customer['user_avatar'] : ""),
                         'user_gender' => $customer['user_gender'],
                         'user_phonenumber' => $customer['user_phonenumber'],
                         'referrer_code' => $customer['referrer_code'],
@@ -81,13 +112,14 @@ function nbee_sync_customers()
                 // Nếu user chưa tồn tại, tạo mới user
                 $user_id = wp_insert_user(array(
                     'user_login' => $customer['user_login'],
-                    'user_pass' => wp_generate_password(),
+                    'user_pass' => $customer['user_password'] ?? "",
                     'user_email' => $email, // Sử dụng email đã kiểm tra
                     'display_name' => $customer['display_name'],
+                    'first_name' => $customer['display_name'],
                     'user_registered' => gmdate('Y-m-d H:i:s', intval($customer['createdAt'] / 1000)),
-                    'role' => 'customer',
+                    'role' => $customer['user_role'],
                     'meta_input' => array(
-                        'user_avatar' => $nbee_backend_media_uri . '/' . $customer['user_avatar'],
+                        'user_avatar' => (!empty($customer['user_avatar']) ? $nbee_backend_media_uri . '/' . $customer['user_avatar'] : ""),
                         'user_gender' => $customer['user_gender'],
                         'user_phonenumber' => $customer['user_phonenumber'],
                         'referrer_code' => $customer['referrer_code'],

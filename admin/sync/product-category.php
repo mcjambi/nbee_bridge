@@ -15,7 +15,7 @@ function nbee_sync_product_category()
     while ($is_more_data && $token) {
         // Gửi request tới API với tham số phân trang
         $response = wp_remote_get(
-            $nbee_backend_crm_uri . '/product_category/admin?page=' . $page . '&limit=' . $limit . '&sort=category_order:asc',
+            $nbee_backend_crm_uri . '/sync/product_categories?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
                     'x-authorization' => $token,

@@ -44,7 +44,7 @@ function nbee_sync_product_collection()
     while ($is_more_data && $token) {
         // Send request to API with pagination parameters
         $response = wp_remote_get(
-            $nbee_backend_crm_uri . '/product_collection/admin?page=' . $page . '&limit=' . $limit . '&sort=collection_order:asc',
+            $nbee_backend_crm_uri . '/sync/product_collections?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
                     'x-authorization' => $token,

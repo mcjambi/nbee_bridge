@@ -16,7 +16,7 @@ class NBee_Bridge
         id INT(11) NOT NULL AUTO_INCREMENT,
         wp_id BIGINT(20) NOT NULL,
         nbee_id VARCHAR(255) NOT NULL,
-        type ENUM('product', 'category', 'brand', 'collection', 'customer', 'variant', 'voucher', 'order') NOT NULL,
+        type ENUM('product', 'category', 'brand', 'collection', 'customer', 'variant', 'voucher', 'order', 'review') NOT NULL,
         PRIMARY KEY  (id),
         UNIQUE KEY unique_wp_nbee (wp_id, nbee_id, type)
     ) $charset_collate;";

@@ -2,6 +2,7 @@
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-category.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-collection.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/product-brand.php";
+require_once NBEE_PLUGIN_PATH . "admin/sync/product-review.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/customer.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/product.php";
 require_once NBEE_PLUGIN_PATH . "admin/sync/coupon.php";
@@ -86,6 +87,9 @@ function nbee_ecommerce_sync_handler()
             break;
         case 'sync_orders':
             nbee_sync_orders();
+            break;
+        case 'sync_product_reviews':
+            nbee_sync_product_review();
             break;
             // ...existing code...
     }

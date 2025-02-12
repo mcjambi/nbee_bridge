@@ -125,7 +125,7 @@ function nbee_sync_product_brand()
     while ($is_more_data && $token) {
         // Send request to API with pagination parameters
         $response = wp_remote_get(
-            $nbee_backend_crm_uri . '/product_brand/admin?page=' . $page . '&limit=' . $limit . '&sort=brand_order:asc',
+            $nbee_backend_crm_uri . '/sync/product_brands?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
                     'x-authorization' => $token,
@@ -173,7 +173,7 @@ function nbee_sync_product_brand()
                 );
                 $term_id = $wp_id;
             } else {
-                // If brand does not exist, create new
+                // If brand does not exist, cre ate new
                 $term = wp_insert_term(
                     $brand['brand_name'],
                     'product_brand',

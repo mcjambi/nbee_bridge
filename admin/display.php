@@ -284,19 +284,27 @@ function nbee_ecommerce_sync()
                     <?php wp_nonce_field('nbee_ecommerce_sync'); ?>
                     <h4><?php _e('Đồng bộ dữ liệu') ?></h4>
                     <div class="notice notice-info notice-alt inline" style="display:block!important; margin-bottom: 20px;">
-                        <p><?php _e('Chỉ dành cho kỹ thuật viên. Chỉ thao tác khi thực sự cần thiết và bạn biết là bạn đang làm cái gì. OK!') ?></p>
+                        <p><?php _e('Chỉ dành cho kỹ thuật viên. Chỉ thao tác khi thực sự cần thiết và bạn biết là bạn đang làm cái gì và phải theo thứ tự OK!') ?></p>
+                        <p><?php _e('1: Danh mục sản phẩm') ?></p>
+                        <p><?php _e('2: Thương hiệu sản phẩm') ?></p>
+                        <p><?php _e('3: Bộ sưu sản phẩm') ?></p>
+                        <p><?php _e('4: Sản phẩm') ?></p>
+                        <p><?php _e('5: Khách hàng') ?></p>
+                        <p><?php _e('6: Khuyến mãi') ?></p>
+                        <p><?php _e('7: Đơn hàng') ?></p>
+                        <p><?php _e('8: Đánh giá sản phẩm') ?></p>
                     </div>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_store_settings')"><?php _e('Cài đặt cửa hàng') ?></button>
+                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_store_settings')"><?php _e('Cài đặt cửa hàng') ?></button> -->
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_catalog')"><?php _e('Danh mục sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_brand')"><?php _e('Thương hiệu sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_collection')"><?php _e('Bộ sưu tập sản phẩm') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_products')"><?php _e('Sản phẩm') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức thanh toán') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_shipping_methods')"><?php _e('Phương thức vận chuyển') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_promotions')"><?php _e('Khuyến mãi') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_customers')"><?php _e('Khách hàng') ?></button>
+                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức thanh toán') ?></button> -->
+                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_shipping_methods')"><?php _e('Phương thức vận chuyển') ?></button> -->
+                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_promotions')"><?php _e('Khuyến mãi') ?></button>
                     <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_orders')"><?php _e('Đơn hàng') ?></button>
+                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá sản phẩm') ?></button>
                 </form>
             </div>
 
@@ -355,7 +363,7 @@ function nbee_ecommerce_sync()
                             message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Sản phẩm?'); ?>';
                             break;
                         case 'sync_product_reviews':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đánh giá?'); ?>';
+                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đánh giá sản phẩm?'); ?>';
                             break;
                         case 'sync_payment_methods':
                             message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Phương thức thanh toán?'); ?>';
