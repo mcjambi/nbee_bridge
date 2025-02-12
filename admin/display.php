@@ -100,6 +100,11 @@ function nbee_nbee_bridge()
             </p>
 
             <p class="flatsome-registration-form__code">
+                <label class="nbee_label"><?php _e('Back-end-xsinged') ?></label>
+                <input type="text" value="<?php echo get_option('nbee_backend_xsigned') ?>" name="nbee_backend_xsigned" class="code" style="width:100%;padding:10px 16px;">
+            </p>
+
+            <p class="flatsome-registration-form__code">
                 <label class="nbee_label"><?php _e('Client public key') ?></label>
                 <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" value="<?php echo get_option('nbee_client_public_key') ?>" name="nbee_client_public_key" class="code" style="width:100%;padding:10px 16px;">
             </p>
@@ -266,9 +271,10 @@ function nbee_ecommerce_sync()
 {
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
     $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
-    if ($nbee_backend_media_uri && $nbee_backend_crm_uri) {
+    if ($nbee_backend_media_uri && $nbee_backend_crm_uri && $nbee_backend_xsigned) {
         if ($token) {
     ?>
             <div class="sync-box" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">

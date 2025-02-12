@@ -8,6 +8,7 @@ function nbee_sync_orders()
     $limit = 10;
     $is_more_data = true;
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
     $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
     while ($is_more_data && $token) {
@@ -16,7 +17,7 @@ function nbee_sync_orders()
             array(
                 'headers' => array(
                     'x-authorization' => $token,
-                    'x-signed' => 'g6XlE1JZdkwf1KxXPn8b_UvqQQEeO6YOqT7mpQvGv'
+                    'x-signed' => $nbee_backend_xsigned
                 ),
             )
         );

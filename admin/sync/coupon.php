@@ -8,6 +8,7 @@ function nbee_sync_coupons()
     $limit = 40; // Số lượng voucher mỗi lần đồng bộ
     $is_more_data = true; // Biến kiểm tra có còn dữ liệu hay không
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
     $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
@@ -17,7 +18,7 @@ function nbee_sync_coupons()
             $nbee_backend_crm_uri . '/voucher?page=' . $page . '&limit=' . $limit . '&sort=createdAt:desc',
             array(
                 'headers' => array(
-                    'x-authorization' => $token
+                    'x-signed' => $nbee_backend_xsigned
                 ),
             )
         );

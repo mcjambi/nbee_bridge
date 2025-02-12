@@ -10,6 +10,7 @@ function nbee_sync_product()
     $is_more_data = true; // Biến kiểm tra có còn dữ liệu hay không
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
     $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
     while ($is_more_data && $token) {
@@ -19,7 +20,7 @@ function nbee_sync_product()
             array(
                 'headers' => array(
                     'x-authorization' => $token,
-                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
+                    'x-signed' => $nbee_backend_xsigned
                 ),
             )
         );
@@ -101,16 +102,15 @@ function nbee_sync_product()
 
             // Cập nhật attributes nếu sản phẩm có biến thể
             if (isset($product['product_variant_group'])) {
-                $attributes = array();
+                $attributes = $wc_product->get_attributes(); // Lấy danh sách thuộc tính hiện có
+
                 foreach ($product["product_variant_group"] as $variant_group) {
-
                     if (!empty($variant_group['variant_group_name']) && !empty($variant_group['variant_group_value'])) {
-
                         $attribute_name = sanitize_title($variant_group['variant_group_name']); // Slug cho thuộc tính
                         $taxonomy = 'pa_' . $attribute_name; // Taxonomy
                         $name_group = ucfirst($variant_group['variant_group_name']);
 
-                        // Kiểm tra nếu thuộc tính chưa tồn tại, tạo mới
+                        // Kiểm tra nếu thuộc tính chưa tồn tại trong hệ thống, tạo mới
                         if (!wc_attribute_taxonomy_id_by_name($name_group)) {
                             wc_create_attribute([
                                 'slug'         => $taxonomy,
@@ -121,22 +121,35 @@ function nbee_sync_product()
                             ]);
                         }
 
-                        // Lấy danh sách giá trị thuộc tính
-                        $attribute_values = array_map(function ($attr) {
+                        // Lấy danh sách giá trị thuộc tính từ dữ liệu đầu vào
+                        $new_attribute_values = array_map(function ($attr) {
                             return $attr['attribute_name'];
                         }, $variant_group['product_variant_group_attribute']);
 
-                        // Tạo đối tượng WC_Product_Attribute
-                        $wc_attribute = new WC_Product_Attribute();
-                        $wc_attribute->set_name($name_group);
-                        $wc_attribute->set_options($attribute_values);
-                        $wc_attribute->set_visible(true);
-                        $wc_attribute->set_variation(true); // Gán thuộc tính cho variant
+                        // Nếu thuộc tính đã tồn tại, cập nhật giá trị
+                        if (array_key_exists($taxonomy, $attributes)) {
+                            $existing_attribute = $attributes[$taxonomy];
 
-                        $attributes[$taxonomy] = $wc_attribute;
+                            // Kết hợp giá trị hiện có và giá trị mới, loại bỏ trùng lặp
+                            $merged_values = array_unique(array_merge($existing_attribute->get_options(), $new_attribute_values));
+
+                            // Cập nhật giá trị thuộc tính
+                            $existing_attribute->set_options($merged_values);
+                            $attributes[$taxonomy] = $existing_attribute;
+                        } else {
+                            // Tạo mới thuộc tính nếu chưa tồn tại
+                            $wc_attribute = new WC_Product_Attribute();
+                            $wc_attribute->set_name($name_group);
+                            $wc_attribute->set_options($new_attribute_values);
+                            $wc_attribute->set_visible(true);
+                            $wc_attribute->set_variation(true); // Gán thuộc tính cho variant
+
+                            $attributes[$taxonomy] = $wc_attribute;
+                        }
                     }
                 }
 
+                // Cập nhật lại danh sách thuộc tính cho sản phẩm
                 $wc_product->set_attributes($attributes);
             }
 

@@ -37,8 +37,8 @@ function nbee_sync_product_collection()
     $page = 1; // Start from page 1
     $limit = 100; // Number of collections per sync
     $is_more_data = true; // Check if there is more data
-    $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
     $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
     while ($is_more_data && $token) {
@@ -48,7 +48,7 @@ function nbee_sync_product_collection()
             array(
                 'headers' => array(
                     'x-authorization' => $token,
-                    'x-signed' => 'JGuiytu7657647_76576Hfgghgfyutf____765r65e3543jh'
+                    'x-signed' => $nbee_backend_xsigned
                 ),
             )
         );
