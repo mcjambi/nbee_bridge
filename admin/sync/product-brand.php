@@ -111,24 +111,19 @@ add_filter('manage_product_brand_custom_column', 'display_brand_thumbnail_column
 // Sync brand về
 function nbee_sync_product_brand()
 {
-    global $wpdb; // Kết nối database WordPress
-    $tbl_id_mapping = $wpdb->prefix . 'nbee_id_mapping'; // Bảng ánh xạ ID
-
     $page = 1; // Start from page 1
     $limit = 100; // Number of brands per sync
     $is_more_data = true; // Check if there is more data
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
     $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
-    $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
-    while ($is_more_data && $token) {
+    while ($is_more_data) {
         // Send request to API with pagination parameters
         $response = wp_remote_get(
             $nbee_backend_crm_uri . '/sync/product_brands?page=' . $page . '&limit=' . $limit,
             array(
                 'headers' => array(
-                    'x-authorization' => $token,
                     'x-signed' => $nbee_backend_xsigned
                 ),
             )
@@ -153,78 +148,118 @@ function nbee_sync_product_brand()
         }
 
         foreach ($brands as $brand) {
-            // Check if brand already exists
-            // Lấy `wp_id` từ bảng ánh xạ
-            $wp_id = $wpdb->get_var($wpdb->prepare(
-                "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'brand'",
-                $brand['brand_id']
-            ));
-
-            if ($wp_id) {
-                // If brand exists, update information
-                wp_update_term(
-                    $wp_id,
-                    'product_brand',
-                    array(
-                        'name'        => $brand['brand_name'],
-                        'description' => $brand['brand_description'],
-                        'slug'        => $brand['brand_slug'],
-                    )
-                );
-                $term_id = $wp_id;
-            } else {
-                // If brand does not exist, cre ate new
-                $term = wp_insert_term(
-                    $brand['brand_name'],
-                    'product_brand',
-                    array(
-                        'description' => $brand['brand_description'],
-                        'slug'        => $brand['brand_slug'],
-                    )
-                );
-
-                if (is_wp_error($term)) {
-                    error_log("Error while creating brand: " . $term->get_error_message());
-                    // If error occurs while creating brand, continue loop
-                    continue;
-                }
-                $term_id = $term['term_id'];
-
-                // Thêm ánh xạ vào bảng mapping
-                $wpdb->insert(
-                    $tbl_id_mapping,
-                    array(
-                        'wp_id'   => $term_id,
-                        'nbee_id' => $brand['brand_id'],
-                        'type'    => 'brand',
-                    ),
-                    array('%d', '%s', '%s')
-                );
-            }
-
-            // Update other metadata
-            update_term_meta($term_id, 'order', isset($brand['brand_order']) ? $brand['brand_order'] : '');
-            update_term_meta($term_id, 'status', isset($brand['brand_status']) ? $brand['brand_status'] : '');
-            update_term_meta($term_id, 'createdAt', $brand['createdAt']);
-
-            // Xóa thuộc tính 'brand_description' khỏi mảng $brand
-            unset($brand['brand_description']);
-            update_term_meta($term_id, 'product_brand_fields', json_encode($brand, JSON_UNESCAPED_UNICODE));
-
-            // Cập nhật thumbnail với link hình ảnh phù hợp
-            if (isset($brand['product_brand_to_media'])) {
-                $brand_thumbnail_url = isset($brand['product_brand_to_media']['media_thumbnail']['scale-512'])
-                    ? $nbee_backend_media_uri . '/' . $brand['product_brand_to_media']['media_thumbnail']['scale-512']
-                    : $nbee_backend_media_uri . '/' . $brand['product_brand_to_media']['media_url'];
-
-                if (!empty($brand_thumbnail_url) && filter_var($brand_thumbnail_url, FILTER_VALIDATE_URL)) {
-                    $media_id = upload_image_to_media_library($brand_thumbnail_url);
-                    update_term_meta($term_id, 'thumbnail_id', $media_id);
-                }
-            }
+            nbee_handle_brand($brand);
         }
 
         // Increase page number to get next data
         $page++;
+    }
+}
+
+function nbee_sync_single_product_brand($product_brand_id)
+{
+    $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
+    $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
+
+    // Send request to API with pagination parameters
+    $response = wp_remote_get(
+        $nbee_backend_crm_uri . '/sync/product_brand/' . $product_brand_id,
+        array(
+            'headers' => array(
+                'x-signed' => $nbee_backend_xsigned
+            ),
+        )
+    );
+
+    if (is_wp_error($response)) {
+        error_log("API request error: " . $response->get_error_message());
+        return;
+    }
+
+    $status_code = wp_remote_retrieve_response_code($response);
+    if ($status_code != 200) {
+        error_log("API response status code: " . $status_code);
+        return;
+    }
+
+    $brand = json_decode(wp_remote_retrieve_body($response), true);
+
+    if ($brand) {
+        nbee_handle_brand($brand);
+    }
+}
+
+function nbee_handle_brand($brand)
+{
+    global $wpdb; // Kết nối database WordPress
+    $tbl_id_mapping = $wpdb->prefix . 'nbee_id_mapping'; // Bảng ánh xạ ID
+    $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
+
+    // Check if brand already exists
+    // Lấy `wp_id` từ bảng ánh xạ
+    $wp_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT wp_id FROM $tbl_id_mapping WHERE nbee_id = %s AND type = 'brand'",
+        $brand['brand_id']
+    ));
+
+    if ($wp_id) {
+        // If brand exists, update information
+        wp_update_term(
+            $wp_id,
+            'product_brand',
+            array(
+                'name'        => $brand['brand_name'],
+                'description' => $brand['brand_description'],
+                'slug'        => $brand['brand_slug'],
+            )
+        );
+        $term_id = $wp_id;
+    } else {
+        // If brand does not exist, cre ate new
+        $term = wp_insert_term(
+            $brand['brand_name'],
+            'product_brand',
+            array(
+                'description' => $brand['brand_description'],
+                'slug'        => $brand['brand_slug'],
+            )
+        );
+
+        if (is_wp_error($term)) {
+            return;
+        }
+        $term_id = $term['term_id'];
+
+        // Thêm ánh xạ vào bảng mapping
+        $wpdb->insert(
+            $tbl_id_mapping,
+            array(
+                'wp_id'   => $term_id,
+                'nbee_id' => $brand['brand_id'],
+                'type'    => 'brand',
+            ),
+            array('%d', '%s', '%s')
+        );
+    }
+
+    // Update other metadata
+    update_term_meta($term_id, 'order', isset($brand['brand_order']) ? $brand['brand_order'] : '');
+    update_term_meta($term_id, 'status', isset($brand['brand_status']) ? $brand['brand_status'] : '');
+    update_term_meta($term_id, 'createdAt', $brand['createdAt']);
+
+    // Xóa thuộc tính 'brand_description' khỏi mảng $brand
+    unset($brand['brand_description']);
+    update_term_meta($term_id, 'product_brand_fields', json_encode($brand, JSON_UNESCAPED_UNICODE));
+
+    // Cập nhật thumbnail với link hình ảnh phù hợp
+    if (isset($brand['product_brand_to_media'])) {
+        $brand_thumbnail_url = isset($brand['product_brand_to_media']['media_thumbnail']['scale-512'])
+            ? $nbee_backend_media_uri . '/' . $brand['product_brand_to_media']['media_thumbnail']['scale-512']
+            : $nbee_backend_media_uri . '/' . $brand['product_brand_to_media']['media_url'];
+
+        if (!empty($brand_thumbnail_url) && filter_var($brand_thumbnail_url, FILTER_VALIDATE_URL)) {
+            $media_id = upload_image_to_media_library($brand_thumbnail_url);
+            update_term_meta($term_id, 'thumbnail_id', $media_id);
+        }
     }
 }

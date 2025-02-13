@@ -105,6 +105,11 @@ function nbee_nbee_bridge()
             </p>
 
             <p class="flatsome-registration-form__code">
+                <label class="nbee_label"><?php _e('WP-access-token') ?></label>
+                <input type="text" value="<?php echo get_option('nbee_wp_access_token') ?>" name="nbee_wp_access_token" class="code" style="width:100%;padding:10px 16px;">
+            </p>
+
+            <p class="flatsome-registration-form__code">
                 <label class="nbee_label"><?php _e('Client public key') ?></label>
                 <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" value="<?php echo get_option('nbee_client_public_key') ?>" name="nbee_client_public_key" class="code" style="width:100%;padding:10px 16px;">
             </p>
@@ -272,157 +277,136 @@ function nbee_ecommerce_sync()
     $nbee_backend_media_uri = get_option('nbee_backend_media_uri');
     $nbee_backend_crm_uri = get_option('nbee_backend_crm_uri');
     $nbee_backend_xsigned = get_option('nbee_backend_xsigned');
-    $token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : null;
 
     if ($nbee_backend_media_uri && $nbee_backend_crm_uri && $nbee_backend_xsigned) {
-        if ($token) {
     ?>
-            <div class="sync-box" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">
-                <form action="<?php echo admin_url('admin-post.php') ?>" method="POST" autocomplete="off" id="nbee_sync_form" style="display: flex; flex-wrap: wrap; gap: 12px;">
-                    <input type="hidden" name="action" value="nbee_ecommerce_sync">
-                    <input type="hidden" name="sync_action" value="">
-                    <?php wp_nonce_field('nbee_ecommerce_sync'); ?>
-                    <h4><?php _e('Đồng bộ dữ liệu') ?></h4>
-                    <div class="notice notice-info notice-alt inline" style="display:block!important; margin-bottom: 20px;">
-                        <p><?php _e('Chỉ dành cho kỹ thuật viên. Chỉ thao tác khi thực sự cần thiết và bạn biết là bạn đang làm cái gì và phải theo thứ tự OK!') ?></p>
-                        <p><?php _e('1: Danh mục sản phẩm') ?></p>
-                        <p><?php _e('2: Thương hiệu sản phẩm') ?></p>
-                        <p><?php _e('3: Bộ sưu sản phẩm') ?></p>
-                        <p><?php _e('4: Sản phẩm') ?></p>
-                        <p><?php _e('5: Khách hàng') ?></p>
-                        <p><?php _e('6: Khuyến mãi') ?></p>
-                        <p><?php _e('7: Đơn hàng') ?></p>
-                        <p><?php _e('8: Đánh giá sản phẩm') ?></p>
-                    </div>
-                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_store_settings')"><?php _e('Cài đặt cửa hàng') ?></button> -->
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_catalog')"><?php _e('Danh mục sản phẩm') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_brand')"><?php _e('Thương hiệu sản phẩm') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_collection')"><?php _e('Bộ sưu tập sản phẩm') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_products')"><?php _e('Sản phẩm') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_customers')"><?php _e('Khách hàng') ?></button>
-                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức thanh toán') ?></button> -->
-                    <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_shipping_methods')"><?php _e('Phương thức vận chuyển') ?></button> -->
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_promotions')"><?php _e('Khuyến mãi') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_orders')"><?php _e('Đơn hàng') ?></button>
-                    <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá sản phẩm') ?></button>
-                </form>
-            </div>
-
-            <div id="nbee_loading_modal" style="display:none;">
-                <div class="nbee_loading_content">
-                    <p><?php _e('Đang đồng bộ...'); ?></p>
+        <div class="sync-box" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">
+            <form action="<?php echo admin_url('admin-post.php') ?>" method="POST" autocomplete="off" id="nbee_sync_form" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                <input type="hidden" name="action" value="nbee_ecommerce_sync">
+                <input type="hidden" name="sync_action" value="">
+                <?php wp_nonce_field('nbee_ecommerce_sync'); ?>
+                <h4><?php _e('Đồng bộ dữ liệu') ?></h4>
+                <div class="notice notice-info notice-alt inline" style="display:block!important; margin-bottom: 20px;">
+                    <p><?php _e('Chỉ dành cho kỹ thuật viên. Chỉ thao tác khi thực sự cần thiết và bạn biết là bạn đang làm cái gì và phải theo thứ tự OK!') ?></p>
+                    <p><?php _e('1: Danh mục sản phẩm') ?></p>
+                    <p><?php _e('2: Thương hiệu sản phẩm') ?></p>
+                    <p><?php _e('3: Bộ sưu sản phẩm') ?></p>
+                    <p><?php _e('4: Sản phẩm') ?></p>
+                    <p><?php _e('5: Khách hàng') ?></p>
+                    <p><?php _e('6: Khuyến mãi') ?></p>
+                    <p><?php _e('7: Đơn hàng') ?></p>
+                    <p><?php _e('8: Đánh giá sản phẩm') ?></p>
                 </div>
-            </div>
-
-            <div id="nbee_confirm_modal" style="display:none;">
-                <div class="nbee_confirm_content">
-                    <p id="nbee_confirm_message"></p>
-                    <button class="button button-large button-primary" id="nbee_confirm_yes"><?php _e('Có, đồng bộ') ?></button>
-                    <button class="button button-large" id="nbee_confirm_no"><?php _e('Không, tôi ấn nhầm') ?></button>
-                </div>
-            </div>
-
-            <style>
-                #nbee_loading_modal,
-                #nbee_confirm_modal {
-                    position: fixed;
-                    z-index: 9999;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-
-                .nbee_loading_content,
-                .nbee_confirm_content {
-                    background: #fff;
-                    padding: 20px;
-                    border-radius: 5px;
-                    text-align: center;
-                }
-            </style>
-
-            <script>
-                function confirmSync(action) {
-                    var message = '';
-                    switch (action) {
-                        case 'sync_product_catalog':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Danh mục sản phẩm?'); ?>';
-                            break;
-                        case 'sync_product_brand':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Thương hiệu sản phẩm?'); ?>';
-                            break;
-                        case 'sync_product_collection':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Bộ sưu tập sản phẩm?'); ?>';
-                            break;
-                        case 'sync_products':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Sản phẩm?'); ?>';
-                            break;
-                        case 'sync_product_reviews':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đánh giá sản phẩm?'); ?>';
-                            break;
-                        case 'sync_payment_methods':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Phương thức thanh toán?'); ?>';
-                            break;
-                        case 'sync_shipping_methods':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Phương thức vận chuyển?'); ?>';
-                            break;
-                        case 'sync_promotions':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Khuyến mãi?'); ?>';
-                            break;
-                        case 'sync_customers':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Khách hàng?'); ?>';
-                            break;
-                        case 'sync_orders':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đơn hàng?'); ?>';
-                            break;
-                        case 'sync_store_settings':
-                            message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Cài đặt cửa hàng?'); ?>';
-                            break;
-                    }
-                    document.getElementById('nbee_confirm_message').innerText = message;
-                    document.getElementById('nbee_confirm_modal').style.display = 'flex';
-                    document.getElementById('nbee_confirm_yes').onclick = function() {
-                        document.getElementById('nbee_confirm_modal').style.display = 'none';
-                        document.getElementById('nbee_loading_modal').style.display = 'flex';
-                        document.getElementById('nbee_sync_form').sync_action.value = action;
-                        document.getElementById('nbee_sync_form').submit();
-                    };
-                    document.getElementById('nbee_confirm_no').onclick = function() {
-                        document.getElementById('nbee_confirm_modal').style.display = 'none';
-                    };
-                }
-
-                document.getElementById('nbee_sync_form').addEventListener('submit', function() {
-                    document.getElementById('nbee_loading_modal').style.display = 'flex';
-                });
-            </script>
-        <?php
-        } else {
-        ?>
-            <form action="<?php echo admin_url('admin-post.php?action=nbee_login_admin'); ?>" method="POST" autocomplete="off" id="nbee_login_form">
-                <h4><?php _e('Đăng nhập tài khoản quản trị viên') ?></h4>
-                <p>
-                    <label for="user_input"><?php _e('Email hoặc SDT') ?></label>
-                    <input type="email" name="user_input" id="user_input" required>
-                </p>
-                <p>
-                    <label for="password"><?php _e('Mật khẩu') ?></label>
-                    <input type="password" name="password" id="password" required>
-                </p>
-                <input type="hidden" name="device_type" value="website">
-                <input type="hidden" name="device_signature" value="abc">
-                <input type="hidden" name="device_uuid" value="abc">
-                <button class="button button-large button-primary" type="submit"><?php _e('Đăng nhập') ?></button>
+                <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_store_settings')"><?php _e('Cài đặt cửa hàng') ?></button> -->
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_catalog')"><?php _e('Danh mục sản phẩm') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_brand')"><?php _e('Thương hiệu sản phẩm') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_collection')"><?php _e('Bộ sưu tập sản phẩm') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_products')"><?php _e('Sản phẩm') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_customers')"><?php _e('Khách hàng') ?></button>
+                <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_payment_methods')"><?php _e('Phương thức thanh toán') ?></button> -->
+                <!-- <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_shipping_methods')"><?php _e('Phương thức vận chuyển') ?></button> -->
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_promotions')"><?php _e('Khuyến mãi') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_orders')"><?php _e('Đơn hàng') ?></button>
+                <button class="button button-large button-primary" type="button" onclick="confirmSync('sync_product_reviews')"><?php _e('Đánh giá sản phẩm') ?></button>
             </form>
-        <?php
-        }
+        </div>
+
+        <div id="nbee_loading_modal" style="display:none;">
+            <div class="nbee_loading_content">
+                <p><?php _e('Đang đồng bộ...'); ?></p>
+            </div>
+        </div>
+
+        <div id="nbee_confirm_modal" style="display:none;">
+            <div class="nbee_confirm_content">
+                <p id="nbee_confirm_message"></p>
+                <button class="button button-large button-primary" id="nbee_confirm_yes"><?php _e('Có, đồng bộ') ?></button>
+                <button class="button button-large" id="nbee_confirm_no"><?php _e('Không, tôi ấn nhầm') ?></button>
+            </div>
+        </div>
+
+        <style>
+            #nbee_loading_modal,
+            #nbee_confirm_modal {
+                position: fixed;
+                z-index: 9999;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .nbee_loading_content,
+            .nbee_confirm_content {
+                background: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+            }
+        </style>
+
+        <script>
+            function confirmSync(action) {
+                var message = '';
+                switch (action) {
+                    case 'sync_product_catalog':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Danh mục sản phẩm?'); ?>';
+                        break;
+                    case 'sync_product_brand':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Thương hiệu sản phẩm?'); ?>';
+                        break;
+                    case 'sync_product_collection':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Bộ sưu tập sản phẩm?'); ?>';
+                        break;
+                    case 'sync_products':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Sản phẩm?'); ?>';
+                        break;
+                    case 'sync_product_reviews':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đánh giá sản phẩm?'); ?>';
+                        break;
+                    case 'sync_payment_methods':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Phương thức thanh toán?'); ?>';
+                        break;
+                    case 'sync_shipping_methods':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Phương thức vận chuyển?'); ?>';
+                        break;
+                    case 'sync_promotions':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Khuyến mãi?'); ?>';
+                        break;
+                    case 'sync_customers':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Khách hàng?'); ?>';
+                        break;
+                    case 'sync_orders':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Đơn hàng?'); ?>';
+                        break;
+                    case 'sync_store_settings':
+                        message = '<?php _e('Bạn có chắc chắn muốn đồng bộ Cài đặt cửa hàng?'); ?>';
+                        break;
+                }
+                document.getElementById('nbee_confirm_message').innerText = message;
+                document.getElementById('nbee_confirm_modal').style.display = 'flex';
+                document.getElementById('nbee_confirm_yes').onclick = function() {
+                    document.getElementById('nbee_confirm_modal').style.display = 'none';
+                    document.getElementById('nbee_loading_modal').style.display = 'flex';
+                    document.getElementById('nbee_sync_form').sync_action.value = action;
+                    document.getElementById('nbee_sync_form').submit();
+                };
+                document.getElementById('nbee_confirm_no').onclick = function() {
+                    document.getElementById('nbee_confirm_modal').style.display = 'none';
+                };
+            }
+
+            document.getElementById('nbee_sync_form').addEventListener('submit', function() {
+                document.getElementById('nbee_loading_modal').style.display = 'flex';
+            });
+        </script>
+    <?php
     } else {
-        ?>
+    ?>
         <div class="notice notice-warning notice-alt inline" style="display:block!important">
             <p><?php _e('Vui lòng cấu hình Cài đặt chung trước khi sử dụng tính năng Đồng bộ hóa thương mại điện tử.') ?></p>
         </div>

@@ -35,6 +35,7 @@ class NBee_Bridge
     {
         require_once NBEE_PLUGIN_PATH . 'includes/helpers/helper.php';
         require_once NBEE_PLUGIN_PATH . 'includes/constants/constants.php';
+        require_once NBEE_PLUGIN_PATH . 'includes/api/api.php';
 
         // Tải các tệp admin và public
         if (is_admin()) {

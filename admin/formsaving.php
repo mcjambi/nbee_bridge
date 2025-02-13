@@ -22,6 +22,10 @@ function save_nbee_general_setting()
         update_option('nbee_backend_xsigned', sanitize_text_field($_POST['nbee_backend_xsigned']));
     }
 
+    if (isset($_POST['nbee_wp_access_token'])) {
+        update_option('nbee_wp_access_token', sanitize_text_field($_POST['nbee_wp_access_token']));
+    }
+
     if (isset($_POST['nbee_frontend_crm_uri']) && wp_http_validate_url($_POST['nbee_frontend_crm_uri'])) {
         update_option('nbee_frontend_crm_uri', sanitize_text_field($_POST['nbee_frontend_crm_uri']));
     }
@@ -96,6 +100,7 @@ function nbee_on_uninstall()
     delete_option('nbee_backend_crm_uri');
     delete_option('nbee_backend_media_uri');
     delete_option('nbee_backend_xsigned');
+    delete_option('nbee_wp_access_token');
     delete_option('nbee_frontend_crm_uri');
     delete_option('nbee_sso_page');
     delete_option('nbee_client_public_key');
